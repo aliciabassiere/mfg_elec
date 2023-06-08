@@ -1,5 +1,5 @@
 {
-    "initial capacity" : 32., # GW
+    "initial capacity" : 10., # GW
     "potential capacity" : 36., # GW
     "NX" : 41, # space grid size
     "Xmin" : 0, # minimum value for cost process

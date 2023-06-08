@@ -2,6 +2,7 @@ import numpy as np
 from scipy.stats import norm
 import matplotlib
 import matplotlib.pyplot as plt
+matplotlib.use('TkAgg')
 import time
 from scipy.optimize import root_scalar, minimize
 from scipy.stats import gamma

@@ -1,6 +1,6 @@
 {
-    "initial capacity" : 55., # GW
-    "potential capacity" : 200., # GW
+    "initial capacity" : 5., # GW
+    "potential capacity" : 100., # GW
     "NX" : 41, # space grid size
     "Xmin" : 0.1, # minimum capacity factor value
     "Xmax" : 0.7, # maximum capacity factor value
