@@ -1,16 +1,16 @@
 {
-    "initial capacity" : 64., # GW
-    "total capacity" : 118.3, # GW
-    "NX" : 41,
-    "Xmin" : 0.1,
-    "Xmax" : 0.7,
+    "initial capacity" : 5., # GW
+    "potential capacity" : 100., # GW
+    "NX" : 41, # space grid size
+    "Xmin" : 0.1, # minimum capacity factor value
+    "Xmax" : 0.7, # maximum capacity factor value
     "discount rate" : 0.08,
-    "depreciation rate" : 0.05545, # Half-life 15y for gas, 20y for coal, 12.5y for renewable
+    "depreciation rate" : 0.03, # how fast the cost decreases
     "running cost" : 30, # per kW per year
-    "fixed cost" : 1750, # per kW of capacity
-    "fixed cost decrease rate" : 0.02,
-    "long term mean" : 0.4,
-    "mean reversion" : 0.5,
-    "standard deviation" : 0.075,
+    "fixed cost" : 4500, # per kW of capacity
+    "scrap value" : 0,
+    "long term mean" : 0.4, # parameters of capacity factor process
+    "mean reversion" : 0.5, # parameters of capacity factor process
+    "standard deviation" : 0.075, # parameters of capacity factor process
     "emissions" : 0 # kgCO2 per kWh
 }

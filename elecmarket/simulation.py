@@ -15,6 +15,7 @@ Niter = cp['iterations']
 tol = cp['tolerance']
 sim = Simulation(cagents,ragents,cp)
 conv, elapsed, Nit = sim.run(Niter, tol, cp['power'], cp['offset'])
+
 print('Elapsed time: ', elapsed)
 out = sim.write(scenario_name)
 try:

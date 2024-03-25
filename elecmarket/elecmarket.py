@@ -10,6 +10,7 @@ from scipy.sparse import bsr_matrix
 from scipy.stats import gamma
 from scipy.stats import beta
 from scipy.linalg import block_diag
+from itertools import chain
 import random
 import pandas as pd
 from functools import reduce
@@ -53,7 +54,7 @@ class Agent: # Base class for any producer
         self.dens = np.zeros(self.Nt*self.NX)
 
 
-    def preCalc(self,indens,V,V1,V2):
+    def preCalc(self,indens,V,V1,V2):                  ####### Eclaircir
         # Some technical preliminary computations
         A=np.zeros((self.NX,self.NX))
         A.flat[::self.NX+1] = V
@@ -66,7 +67,7 @@ class Agent: # Base class for any producer
             self.A_ub[((i+1)*self.NX):((i+2)*self.NX), ((i)*self.NX):((i+1)*self.NX)] = -np.diag(np.ones(self.NX))
         self.b_ub=np.zeros((self.Nt-1)*self.NX)
         self.b_ub[:self.NX] = indens
-        self.dens[:self.NX]=indens
+        self.dens[:self.NX] = indens
 
     def bestResponse(self, peakPr, offpeakPr, cPrice, fPrice):
         # best response function
@@ -74,37 +75,38 @@ class Agent: # Base class for any producer
         # offpeakPr : offpeak price vector
         # fPr : vector of fuel prices
         # TODO : revert to interior point when the objective function returned by highs-ds is negative
-        H=np.zeros(self.Nt*self.NX)
+        H = np.zeros(self.Nt * self.NX)
         for i in range(self.Nt):
-            H[i*self.NX:(i+1)*self.NX]=(self.dX*self.dt*np.exp(-self.rho*(self.T[i]))*
-                                        (pcoef*self.gain(peakPr[i],cPrice[i], fPrice[:,i],i)+
-                                         opcoef*self.gain(offpeakPr[i],cPrice[i], fPrice[:,i],i)))
+            H[i*self.NX : (i+1)*self.NX] = (self.dX * self.dt * np.exp(-self.rho * (self.T[i])) *
+                                                (pcoef * self.gain(peakPr[i], cPrice[i], fPrice[:, i], i) +
+                                                 opcoef * self.gain(offpeakPr[i], cPrice[i], fPrice[:, i], i)))
         try:
-            res = linprog(-H[self.NX:],bsr_matrix(self.A_ub),self.b_ub,method="highs-ds")
+            res = linprog(-H[self.NX:], bsr_matrix(self.A_ub), self.b_ub, method="highs-ds")
         except:
-            print(self.name+'bestResponse: Unexpected error')
-        if(res.status):
-            print(self.name,res.message,'Reverting to interior-point')
-            res = linprog(-H[self.NX:],bsr_matrix(self.A_ub),self.b_ub,method="interior-point",options={"sparse":True,"rr":False})
+            print(self.name + 'bestResponse: Unexpected error')
+        if (res.status):
+            print(self.name, res.message, 'Reverting to interior-point')
+            res = linprog(-H[self.NX:], bsr_matrix(self.A_ub), self.b_ub, method="interior-point",
+                          options={"sparse": True, "rr": False})
+
         br = res.x
-        val = np.dot(H[self.NX:],self.dens[self.NX:])
-        ob_func = np.dot(H[self.NX:],br)- val
-        cons = self.b_ub-np.dot(self.A_ub,br)
-        cons1 = np.sum(cons*(cons<0))
-        cons2 = np.sum(br*(br<0))
-        if(cons1+cons2<-100):
-            print(self.name,'Constraint violation, reverting to interior point: ',cons1, cons2)
-            res = linprog(-H[self.NX:],bsr_matrix(self.A_ub),self.b_ub,method="interior-point",options={"sparse":True,"rr":False})
+        val = np.dot(H[self.NX:], self.dens[self.NX:])
+        ob_func = np.dot(H[self.NX:], br) - val
+        cons = self.b_ub - np.dot(self.A_ub, br)
+        cons1 = np.sum(cons * (cons < 0))
+        cons2 = np.sum(br * (br < 0))
+        if (cons1 + cons2 < -100):
+            print(self.name, 'Constraint violation, reverting to interior point: ', cons1, cons2)
+            res = linprog(-H[self.NX:], bsr_matrix(self.A_ub), self.b_ub, method="interior-point",
+                          options={"sparse": True, "rr": False})
             br = res.x
-            val = np.dot(H[self.NX:],self.dens[self.NX:])
-            ob_func = np.dot(H[self.NX:],br)- val
+            val = np.dot(H[self.NX:], self.dens[self.NX:])
+            ob_func = np.dot(H[self.NX:], br) - val
         return ob_func, val, br
 
     def update(self,weight,dens1):
         # density update with given weight
         self.dens[self.NX:] = (1.-weight)*self.dens[self.NX:]+weight*dens1
-
-
 
 
 class Conventional(Agent):
@@ -115,18 +117,26 @@ class Conventional(Agent):
         self.cTax = ap['emissions']
         self.fuel = ap['fuel']
         self.cFuel = ap['cFuel']
-        kappa = ap['mean reversion']
+        kappa = ap['mean reversion']   # Pk pas un attribut ?
         theta = ap['long term mean']
         stdIn = ap['standard deviation']
         delta = stdIn*np.sqrt(2.*kappa/theta)
+        ## Fokker Plank inequalities
+        # Delta : Diffusion
+        # Kappa, theta : Drift
         V=1.+delta*delta*self.X*self.dt/(self.dX*self.dX)
+        self.V = V
         V1 =-delta*delta*self.X[1:]*self.dt/(2*self.dX*self.dX)+kappa*(theta-self.X[1:])*self.dt/(2*self.dX)
+        self.V1 = V1
         V2=-delta*delta*self.X[:-1]*self.dt/(2*self.dX*self.dX)-kappa*(theta-self.X[:-1])*self.dt/(2*self.dX)
+        self.V2 = V2
         alpha = (theta/stdIn)*(theta/stdIn)
-        bet = theta/stdIn/stdIn
+        bet = theta/(stdIn*stdIn)
         indens = ap['initial capacity']*bet*gamma.pdf(bet*self.X,alpha)
+        self.indens = indens
         self.maxdens = ap['total capacity']*bet*gamma.pdf(bet*self.X,alpha)
         self.preCalc(indens,V,V1,V2)
+
     def G(self,x):
         # Gain function
         return (self.epsilon/2+(x-self.epsilon))*(x>self.epsilon)+x*x/2/self.epsilon*(x>0)*(x<=self.epsilon)
@@ -143,7 +153,7 @@ class Conventional(Agent):
 class ConventionalExit(Conventional):
     def __init__(self,name,cp,ap):
         Conventional.__init__(self,name,cp,ap)
-    def gain(self,p, cp, fp,t):
+    def gain(self,p, cp, fp, t):
         return (convcoef*self.G(p-self.cFuel*fp[self.fuel]-self.X-self.cTax*cp) - self.rCost -
                 (self.rho+self.gamma)*self.fCost*np.exp(-self.gamma*self.T[t]))
     def offer(self,p,cp, fp, t):
@@ -181,11 +191,15 @@ class Renewable(Agent):
         stdIn = ap['standard deviation']
         delta = stdIn*np.sqrt(2.*kappa/(theta*(1-theta)-stdIn*stdIn))
         V=1.+delta*delta*self.X*(1-self.X)*self.dt/(self.dX*self.dX)
+        self.V = V
         V1 = -delta*delta*self.X[1:]*(1.-self.X[1:])*self.dt/(2*self.dX*self.dX)+kappa*(theta-self.X[1:])*self.dt/(2*self.dX)
+        self.V1 = V1
         V2 = -delta*delta*self.X[:-1]*(1.-self.X[:-1])*self.dt/(2*self.dX*self.dX)-kappa*(theta-self.X[:-1])*self.dt/(2*self.dX)
+        self.V2 = V2
         alpha = theta*(theta*(1.-theta)/stdIn/stdIn-1.)
         bet = (1.-theta)*(theta*(1.-theta)/stdIn/stdIn-1.)
         indens = ap['initial capacity']*beta.pdf(self.X,alpha,bet)
+        self.indens = indens
         self.maxdens = ap['total capacity']*beta.pdf(self.X,alpha,bet)
         self.preCalc(indens,V,V1,V2)
     def gain(self,p,cp,fp,t):
@@ -211,6 +225,7 @@ class Simulation:
         # cp : common parameters
         self.cagents = cagents # conventional
         self.ragents = ragents # renewable
+        self.nagents = 4
         self.Nt = cp['Nt']
         self.T = np.linspace(cp['tmin'],cp['tmax'],self.Nt)
         self.pdemand = np.array(cp["demand"])*cp["demand ratio"]/(pcoef*cp["demand ratio"]+opcoef)
@@ -223,7 +238,7 @@ class Simulation:
         self.bcoef = np.array(cp['Fsupply'][1])
         self.fPrice = np.zeros((self.Nfuels,self.Nt))
 
-    def psibar(self,x):
+    def psibar(self,x):   ### Fuel price function
         return np.sum(self.bcoef*(x-self.acoef)**2/2.)
 
     def calcPrice(self):
@@ -231,7 +246,7 @@ class Simulation:
         def opfunc(x,t):
             # x = [pp,pop,p1...pK]
             rdem = reduce(lambda a,b:a+b.offer(t),self.ragents,0)
-            res = self.psibar(x[2:])
+            res = self.psibar(x[2:]) # Prix combustibles p1/pK
             for ag in self.cagents:
                 res = res + pcoef*ag.ioffer(x[0],self.fTax[t],x[2:],t) + opcoef*ag.ioffer(x[1],self.fTax[t],x[2:],t)
             return res+pcoef*x[0]*(rdem-self.pdemand[t])+opcoef*x[1]*(rdem-self.opdemand[t])+pcoef*G0(x[0])+opcoef*G0(x[1])
@@ -247,7 +262,7 @@ class Simulation:
             self.Prop[j] = opres.x[1]
             self.fPrice[:,j] = opres.x[2:]
 
-    def run(self,Niter,tol,power=1., shift=1):
+    def run(self, Niter, tol, power=1., shift=1):
         # run the simulation with maximum Niter iterations
         # the program will stop when the total increase of objective function is less than tol
         # power and shift are coefficients in the weight update formula
@@ -255,18 +270,18 @@ class Simulation:
         start = time.time()
         for i in range(Niter):
             self.calcPrice()
-            weight = np.power(1./(i+shift),power)
+            weight = np.power(1./(i+shift),power)  # Update poids
             print("Iteration",i)
             message = "Weight: {:.4f}".format(weight)
             obtot = 0
             for a in self.ragents:
-                ob, val, dens1 = a.bestResponse(self.Prp,self.Prop,self.fTax,self.fPrice)
-                a.update(weight,dens1)
+                ob, val, dens1 = a.bestResponse(self.Prp, self.Prop, self.fTax, self.fPrice)
+                a.update(weight, dens1)
                 message = message+"; "+a.name+": {:.2f}".format(ob)
                 obtot = obtot+ob
             for a in self.cagents:
-                ob, val, dens1 = a.bestResponse(self.Prp,self.Prop,self.fTax,self.fPrice)
-                a.update(weight,dens1)
+                ob, val, dens1 = a.bestResponse(self.Prp, self.Prop, self.fTax, self.fPrice)
+                a.update(weight, dens1)
                 message = message+"; "+a.name+": {:.2f}".format(ob)
                 obtot = obtot+ob
 
@@ -279,6 +294,81 @@ class Simulation:
         self.calcPrice()
         end = time.time()
         return conv, end-start, Niter
+
+    def plannerProblem(self):
+
+        self.calcPrice()
+
+        Prp_array = np.array([self.Prp[t] for t in range(self.Nt)])
+        Prop_array = np.array([self.Prop[t] for t in range(self.Nt)])
+        fPrice_array = np.array([self.fPrice[:, t] for t in range(self.Nt)])
+
+        agents = self.ragents + self.cagents
+        dens_optim = {}  # Will contain the optimal densities
+        a_ub_matrix = {}
+        b_ub_matrix = {}
+
+        total_gain = 0
+
+        for index, agent in enumerate(agents):
+            print(agent.name)
+            dens_optim[f'z{index}'] = agent.indens
+            a_ub_matrix[f'a_ub{index}'] = agent.A_ub
+            b_ub_matrix[f'b_ub{index}'] = agent.b_ub
+
+        for t in np.arange(self.Nt):
+            gains = np.array([agent.gain(Prp_array[t], Prop_array[t], fPrice_array[t], t) for agent in agents])
+            total_gain += np.sum(gains)
+
+        print("Total Gain:", total_gain)
+        return total_gain
+
+
+
+    # Def X0: mesure "centrale"
+    # Def constraints
+    # result = minimize(-plannerProblem, x0, method='SLSQP', constraints=constraints)
+
+    def bestResponse(self, peakPr, offpeakPr, cPrice, fPrice):
+        # best response function
+        # peakPr : peak price vector
+        # offpeakPr : offpeak price vector
+        # fPr : vector of fuel prices
+        # TODO : revert to interior point when the objective function returned by highs-ds is negative
+        H=np.zeros(self.Nt*self.NX)
+        print(self.name)
+        for i in range(self.Nt):
+            print("Time ", i)
+            H[i*self.NX:(i+1)*self.NX]=(self.dX*self.dt*np.exp(-self.rho*(self.T[i]))*
+                                        (pcoef*self.gain(peakPr[i],cPrice[i], fPrice[:,i],i)+
+                                         opcoef*self.gain(offpeakPr[i],cPrice[i], fPrice[:,i],i)))
+            test = H[i*self.NX:(i+1)*self.NX]
+            print(test)
+            print(test.shape)
+
+        try:
+            res = linprog(-H[self.NX:],bsr_matrix(self.A_ub),self.b_ub,method="highs-ds")
+        except:
+            print(self.name+'bestResponse: Unexpected error')
+        if(res.status):
+            print(self.name,res.message,'Reverting to interior-point')
+            res = linprog(-H[self.NX:],bsr_matrix(self.A_ub),self.b_ub,method="interior-point",options={"sparse":True,"rr":False})
+
+        br = res.x
+        print("Result ", res)
+        val = np.dot(H[self.NX:],self.dens[self.NX:])
+        ob_func = np.dot(H[self.NX:],br)- val
+        cons = self.b_ub-np.dot(self.A_ub,br)
+        cons1 = np.sum(cons*(cons<0))
+        cons2 = np.sum(br*(br<0))
+        if(cons1+cons2<-100):
+            print(self.name,'Constraint violation, reverting to interior point: ',cons1, cons2)
+            res = linprog(-H[self.NX:],bsr_matrix(self.A_ub),self.b_ub,method="interior-point",options={"sparse":True,"rr":False})
+            br = res.x
+            val = np.dot(H[self.NX:],self.dens[self.NX:])
+            ob_func = np.dot(H[self.NX:],br)- val
+        return ob_func, val, br
+
 
     def write(self, scenario_name):
         # write simulation output into a file scenario_name
@@ -298,9 +388,9 @@ class Simulation:
         df.to_csv(scenario_name+'.csv')
         return output
 
-
 def getpar(fname):
     # service function: extract parameter dictionary from file
     with open(fname) as f:
         data = f.read()
     return eval(data)
+
