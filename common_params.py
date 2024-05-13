@@ -1,5 +1,5 @@
 {
-    "Nt" : 101, # Time grid size
+    "Nt" : 41, # Time grid size
     "tmin" : 0,
     "tmax" : 25, # simulation length in years
     "power" : 0.8, # parameters of the weight function in fictitious play
