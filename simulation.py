@@ -20,11 +20,10 @@ ragents = [Renewable('Renewable',cp,getpar('renewable.py'))]
 Niter = cp['iterations']
 tol = cp['tolerance']
 sim = Simulation(cagents,ragents,cp)
-conv, elapsed, Nit = sim.run(Niter, tol, cp['power'], cp['offset'])
+conv, elapsed, Nit, price_vector, mf_revenues = sim.run(Niter, tol, cp['power'], cp['offset'])
 print('Elapsed time: ', elapsed)
 
 out = sim.write(scenario_name)
-print(out)
 
 try:
     os.mkdir(scenario_name)
@@ -45,7 +44,7 @@ plt.subplot(121)
 plt.plot(2018+out['time'], out['peak price'], label='peak price')
 plt.plot(2018+out['time'], out['offpeak price'], label='offpeak price')
 plt.legend()
-plt.title('Electricity price')
+plt.title('Electricity price (Carbon Tax)')
 plt.subplot(122)
 
 # Plotting the capacity for each agent type; modify this if you change agent types
@@ -53,7 +52,7 @@ plt.plot(2018+out['time'], out['Coal capacity'], label='Coal capacity')
 plt.plot(2018+out['time'], out['Gas capacity'],label='Gas capacity')
 plt.plot(2018+out['time'], out['Renewable capacity'], label='Renewable capacity')
 plt.legend()
-plt.title('Installed capacity')
+plt.title('Installed capacity (Carbon Tax)')
 plt.savefig(scenario_name+"/"+'price_capacity.pdf', format='pdf')
 
 plt.figure(figsize=(14, 5))
@@ -68,7 +67,7 @@ plt.subplot(122)
 plt.plot(2018+out['time'], out['Fuel 0'], label='Coal price')
 plt.plot(2018+out['time'], out['Fuel 1'], label='Gas price')
 plt.legend()
-plt.title('Fuel price')
+plt.title('Fuel price (Carbon Tax)')
 #plt.plot(2018+out['time'],np.interp(out['time'],cp["carbon tax"][0],cp["carbon tax"][1]))
 plt.savefig(scenario_name+"/"+'demand_fuelprice.pdf',format='pdf')
 
@@ -83,7 +82,7 @@ plt.bar(2018+out['time'],out['Gas peak supply'],width=0.25,
 plt.bar(2018+out['time'],out['Renewable peak supply'],width=0.25,
         bottom=out['Gas peak supply']+out['Coal peak supply'],label='Renewable supply')
 #plt.ylim([0,80])
-plt.title('Conventional/ renewable peak supply, GW')
+plt.title('Conventional/ renewable peak supply (Carbon Tax), GW')
 plt.legend()
 plt.subplot(122)
 plt.bar(2018+out['time'],out['Coal offpeak supply'],width=0.5,label='Coal supply')
@@ -92,7 +91,7 @@ plt.bar(2018+out['time'],out['Gas offpeak supply'],width=0.25,
 plt.bar(2018+out['time'],out['Renewable offpeak supply'],width=0.25,
         bottom=out['Gas offpeak supply']+out['Coal offpeak supply'],label='Renewable supply')
 
-plt.title('Conventional/ renewable off-peak supply, GW')
+plt.title('Conventional/ renewable off-peak supply (Carbon Tax), GW')
 
 #plt.ylim([0,80])
 

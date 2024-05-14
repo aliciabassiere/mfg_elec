@@ -281,7 +281,7 @@ class Agent: # Base class for any producer
                 self.dt * x[offset_agent + 3 * offset_mesure + self.NX - 1] -  # muhat[0][self.NX-1]
                 indenshat[self.NX - 1])
 
-    def bestResponse(self, peakPr, offpeakPr, cPrice, fPrice):
+    def bestResponse(self, peakPr, offpeakPr, cPrice, fPrice, subsidy):
         # best response function
         # peakPr : peak price vector
         # offpeakPr : offpeak price vector
@@ -292,7 +292,7 @@ class Agent: # Base class for any producer
         curval = 0
 
         for t in range(self.Nt-1):
-            H = self.dX*self.dt*np.exp(-self.rho*(self.T[t+1]))*(pcoef*self.gain(peakPr[t+1],cPrice[t+1],fPrice[:,t+1])+opcoef*self.gain(offpeakPr[t+1],cPrice[t+1], fPrice[:,t+1]))
+            H = self.dX*self.dt*np.exp(-self.rho*(self.T[t+1]))*(pcoef*self.gain(peakPr[t+1],cPrice[t+1],fPrice[:,t+1],subsidy)+opcoef*self.gain(offpeakPr[t+1],cPrice[t+1], fPrice[:,t+1],subsidy))
             runGain.addTerms(H,self.m[t])
             curval = curval + np.sum(H*self.m_[t+1,:])
             H = -self.fCost*self.dX*self.dt*np.exp(-(self.rho+self.gamma)*(self.T[t+1]))*np.ones(self.NX)
@@ -368,7 +368,7 @@ class Conventional(Agent):
     def F(self,x):
         return (x-self.epsilon>0)+x/self.epsilon*(x>0)*(x<=self.epsilon)
 
-    def gain(self,p, cp, fp):
+    def gain(self,p, cp, fp, sub):
         return (convcoef*self.G(p-self.cFuel*fp[self.fuel]-self.X-self.cTax*cp) - self.rCost)
 
     def offer(self,p, cp, fp, t):
@@ -409,8 +409,8 @@ class Renewable(Agent):
         self.indenshat = indenshat
         self.preCalc(indens,indenshat,V,V1,V2)
 
-    def gain(self,p,cp,fp):
-        return convcoef*p*self.X - self.rCost
+    def gain(self,p,cp,fp,sub):
+        return convcoef*(p+sub)*self.X - self.rCost
 
     def offer(self,t):
         return sum(self.X*self.m_[t,:])*self.dX
@@ -437,7 +437,8 @@ class Simulation:
         self.Prp = np.zeros(self.Nt)
         self.Prop = np.zeros(self.Nt)
         self.Nfuels = cp['Nfuels']
-        self.fTax = np.interp(self.T,cp['carbon tax'][0],cp['carbon tax'][1])
+        self.carbonTax = np.interp(self.T,cp['carbon tax'][0],cp['carbon tax'][1])
+        self.subsidy = np.interp(self.T,cp['res subsidy'][0],cp['res subsidy'][1])
         self.acoef = np.array(cp['Fsupply'][0])
         self.bcoef = np.array(cp['Fsupply'][1])
         self.fPrice = np.zeros((self.Nfuels,self.Nt))
@@ -456,7 +457,7 @@ class Simulation:
             rdem = reduce(lambda a,b:a+b.offer(t),self.ragents,0)
             res = self.psibar(x[2:])
             for ag in self.cagents:
-                res = res + pcoef*ag.ioffer(x[0],self.fTax[t],x[2:],t) + opcoef*ag.ioffer(x[1],self.fTax[t],x[2:],t)
+                res = res + pcoef*ag.ioffer(x[0],self.carbonTax[t],x[2:],t) + opcoef*ag.ioffer(x[1],self.carbonTax[t],x[2:],t)
             return res+pcoef*x[0]*(rdem-self.pdemand[t])+opcoef*x[1]*(rdem-self.opdemand[t])+pcoef*G0(x[0])+opcoef*G0(x[1])
 
         for j in range(self.Nt):
@@ -486,13 +487,13 @@ class Simulation:
             obtot = 0
 
             for a in self.ragents:
-                ob, val, m, mhat, mu, muhat = a.bestResponse(self.Prp,self.Prop,self.fTax,self.fPrice)
+                ob, val, m, mhat, mu, muhat = a.bestResponse(self.Prp, self.Prop, self.carbonTax, self.fPrice, self.subsidy)
                 a.update(weight, m, mhat, mu, muhat)
                 message = message+"; "+a.name+": {:.2f}".format(ob)
                 obtot = obtot+ob
 
             for a in self.cagents:
-                ob, val, m, mhat, mu, muhat = a.bestResponse(self.Prp,self.Prop,self.fTax,self.fPrice)
+                ob, val, m, mhat, mu, muhat = a.bestResponse(self.Prp,self.Prop,self.carbonTax,self.fPrice, self.subsidy)
                 a.update(weight,m,mhat,mu,muhat)
                 message = message+"; "+a.name+": {:.2f}".format(ob)
                 obtot = obtot+ob
@@ -517,8 +518,8 @@ class Simulation:
 
         for agent in self.cagents:
             producers_revenues += self.compute_agent(agent, self.Prp, self.Prop, self.fPrice)
-            peak_offer += agent.full_offer(self.Prp, self.fTax, self.fPrice)
-            off_peak_offer += agent.full_offer(self.Prop, self.fTax, self.fPrice)
+            peak_offer += agent.full_offer(self.Prp, self.carbonTax, self.fPrice)
+            off_peak_offer += agent.full_offer(self.Prop, self.carbonTax, self.fPrice)
             fuel_revenues = (pcoef * np.sum(peak_offer) + opcoef * np.sum(off_peak_offer)) * agent.cFuel * self.fPrice[agent.fuel]  # revenus du vendeur de combustible ajoutés
             producers_revenues += np.sum(fuel_revenues)
 
@@ -550,8 +551,8 @@ class Simulation:
             output[a.name+" potential capacity"] = a.pot_capacity()
             output[a.name+" exit measure"] = a.exit_measure()
             output[a.name+" entry measure"] = a.entry_measure()
-            output[a.name+" peak supply"] = a.full_offer(self.Prp, self.fTax, self.fPrice)
-            output[a.name+" offpeak supply"] = a.full_offer(self.Prop, self.fTax, self.fPrice)
+            output[a.name+" peak supply"] = a.full_offer(self.Prp, self.carbonTax, self.fPrice)
+            output[a.name+" offpeak supply"] = a.full_offer(self.Prop, self.carbonTax, self.fPrice)
         for a in self.ragents:
             output[a.name+" capacity"] = a.capacity()
             output[a.name+" potential capacity"] = a.pot_capacity()
@@ -571,12 +572,12 @@ class Simulation:
         objective = 0
         agent.preCalc(agent.indens, agent.indenshat, agent.V, agent.V1, agent.V2)
 
-        ob, val, m, mhat, mu, muhat = agent.bestResponse(peakPr, offpeakPr, self.fTax, fPrice)
+        ob, val, m, mhat, mu, muhat = agent.bestResponse(peakPr, offpeakPr, self.carbonTax, fPrice, self.subsidy)
         agent.update(1, m, mhat, mu, muhat)
 
         for t in range(len(peakPr) - 1):
-            run_gain = agent.dX * agent.dt * np.exp(-agent.rho * agent.T[t + 1]) * (pcoef * agent.gain(peakPr[t + 1], self.fTax[t + 1], fPrice[:, t + 1])
-                                                                              + opcoef * agent.gain(offpeakPr[t + 1], self.fTax[t + 1], fPrice[:, t + 1]))
+            run_gain = agent.dX * agent.dt * np.exp(-agent.rho * agent.T[t + 1]) * (pcoef * agent.gain(peakPr[t + 1], self.carbonTax[t + 1], fPrice[:, t + 1], self.subsidy[t + 1])
+                                                                              + opcoef * agent.gain(offpeakPr[t + 1], self.carbonTax[t + 1], fPrice[:, t + 1], self.subsidy[t + 1]))
 
             entry_cost = -agent.fCost * agent.dX * agent.dt * np.ones(agent.NX) * np.exp(-(agent.rho + agent.gamma) * agent.T[t + 1])
 
@@ -596,8 +597,8 @@ class Simulation:
 
         for agent in self.cagents:
             producers_revenues += self.compute_agent(agent, peakPr, offpeakPr, fPrice)
-            peak_offer += agent.full_offer(peakPr, self.fTax, fPrice)
-            off_peak_offer += agent.full_offer(offpeakPr, self.fTax, fPrice)
+            peak_offer += agent.full_offer(peakPr, self.carbonTax, fPrice)
+            off_peak_offer += agent.full_offer(offpeakPr, self.carbonTax, fPrice)
             fuel_revenues = (pcoef*np.sum(peak_offer) + opcoef*np.sum(off_peak_offer)) * agent.cFuel * fPrice[agent.fuel]  # revenus du vendeur de combustible ajoutés
             producers_revenues += np.sum(fuel_revenues)
 
@@ -605,14 +606,13 @@ class Simulation:
             producers_revenues += self.compute_agent(agent, peakPr, offpeakPr, fPrice)
             res_offer += agent.full_offer()
 
-        peak_offer += G0(peakPr)
-        off_peak_offer += G0(offpeakPr)
-        producers_revenues += pcoef * np.sum(G0(peakPr)) + opcoef * np.sum(G0(offpeakPr))
+        baseline_gain = pcoef * np.sum(G0(peakPr)) + opcoef * np.sum(G0(offpeakPr))
+        producers_revenues += baseline_gain
 
-        consumer_surplus_p = (Pmax - peakPr)*(peak_offer+res_offer)
-        consumer_surplus_op = (Pmax - offpeakPr)*(off_peak_offer+res_offer)
+        consumer_surplus_p = (peakPr)*(peak_offer+res_offer)
+        consumer_surplus_op = (offpeakPr)*(off_peak_offer+res_offer)
 
-        objective_planner = pcoef*np.sum(consumer_surplus_p) + opcoef*np.sum(consumer_surplus_op) + producers_revenues
+        objective_planner = producers_revenues - pcoef*np.sum(consumer_surplus_p) - opcoef*np.sum(consumer_surplus_op)
 
         ### Pour paralléliser
 
@@ -650,7 +650,7 @@ class Simulation:
 
         for agent in self.ragents + self.cagents:
             agent.preCalc(agent.indens, agent.indenshat, agent.V, agent.V1, agent.V2)
-            ob, val, m, mhat, mu, muhat = agent.bestResponse(optimized_peakPr, optimized_offpeakPr, self.fTax, optimized_fPrice)
+            ob, val, m, mhat, mu, muhat = agent.bestResponse(optimized_peakPr, optimized_offpeakPr, self.carbonTax, optimized_fPrice, self.subsidy)
             agent.update(1, m, mhat, mu, muhat)
 
         return result, optimized_peakPr, optimized_offpeakPr, optimized_fPrice
@@ -669,7 +669,8 @@ class PlannerProblem:
         self.Prp = np.zeros(self.Nt)
         self.Prop = np.zeros(self.Nt)
         self.Nfuels = cp['Nfuels']
-        self.fTax = np.interp(self.T, cp['carbon tax'][0], cp['carbon tax'][1])
+        self.carbonTax = np.interp(self.T, cp['carbon tax'][0], cp['carbon tax'][1])
+        self.subsidy = np.interp(self.T,cp['res subsidy'][0],cp['res subsidy'][1])
         self.acoef = np.array(cp['Fsupply'][0])
         self.bcoef = np.array(cp['Fsupply'][1])
         self.fPrice = np.zeros((self.Nfuels, self.Nt))
@@ -684,7 +685,7 @@ class PlannerProblem:
             rdem = reduce(lambda a,b:a+b.offer(t),self.ragents,0)
             res = self.psibar(x[2:])
             for ag in self.cagents:
-                res = res + pcoef*ag.ioffer(x[0],self.fTax[t],x[2:],t) + opcoef*ag.ioffer(x[1], self.fTax[t], x[2:], t)
+                res = res + pcoef*ag.ioffer(x[0],self.carbonTax[t],x[2:],t) + opcoef*ag.ioffer(x[1], self.carbonTax[t], x[2:], t)
             return res+pcoef*x[0]*(rdem-self.pdemand[t])+opcoef*x[1]*(rdem-self.opdemand[t])+pcoef*G0(x[0])+opcoef*G0(x[1])
 
         for j in range(self.Nt):
@@ -713,8 +714,8 @@ class PlannerProblem:
             offset += num_vars_per_agent
 
             for t in range(self.Nt - 1):
-                peak_gain = agent.gain(peakPr[t + 1], self.fTax[t + 1], fPrice_array[:, t + 1])
-                offpeak_gain = agent.gain(offpeakPr[t + 1], self.fTax[t + 1], fPrice_array[:, t + 1])
+                peak_gain = agent.gain(peakPr[t + 1], self.carbonTax[t + 1], fPrice_array[:, t + 1], self.subsidy[t+1])
+                offpeak_gain = agent.gain(offpeakPr[t + 1], self.carbonTax[t + 1], fPrice_array[:, t + 1], self.subsidy[t+1])
                 H_run = agent.dX * agent.dt * np.exp(-agent.rho * (self.T[t + 1])) * (
                             pcoef * peak_gain + opcoef * offpeak_gain)
                 H_entry = -agent.fCost * agent.dX * agent.dt * np.exp(
