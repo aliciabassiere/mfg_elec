@@ -106,6 +106,8 @@ print('Elapsed time: ', elapsed)
 
 print("############### Planner Version ###############")
 
+initial_prices = np.random.rand(2 * sim.Nt + sim.Nfuels * sim.Nt)*10
+
 planner_objective, sim.Prp, sim.Prop, sim.fPrice = sim.optimizePrices(mfg_prices)
 
 end_simu = time.time()

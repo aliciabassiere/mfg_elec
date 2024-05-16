@@ -527,16 +527,16 @@ class Simulation:
             producers_revenues += self.compute_agent(agent, self.Prp, self.Prop, self.fPrice)
             res_offer += agent.full_offer()
 
-        producers_revenues += pcoef*np.sum(G0(self.Prp))+opcoef*np.sum(G0(self.Prop)) # Ajout revenus de marché Baseline
+        baseline_gain = pcoef*np.sum(G0(self.Prp))+opcoef*np.sum(G0(self.Prop))
+        producers_revenues += baseline_gain # Ajout revenus de marché Baseline
 
-        peak_offer += G0(self.Prp) # Ajout offre baseline
-        off_peak_offer += G0(self.Prop)
+        peak_offer += F0(self.Prp) # Ajout offre baseline
+        off_peak_offer += F0(self.Prop)
 
-        consumer_surplus_p = (Pmax - self.Prp)*(peak_offer+res_offer)    # Surplus du consommateur : différence entre le price cap et le prix effectivement payé
-                                                                                                       # * quantité d'électricité totale
-        consumer_surplus_op = (Pmax - self.Prop)*(off_peak_offer+res_offer)
+        consumer_surplus_p = self.Prp*(peak_offer+res_offer)    # Surplus du consommateur : différence entre le price cap et le prix effectivement payé                                                                                # * quantité d'électricité totale
+        consumer_surplus_op = self.Prop*(off_peak_offer+res_offer)
 
-        mf_revenues = pcoef*np.sum(consumer_surplus_p) + opcoef*np.sum(consumer_surplus_op) + producers_revenues
+        mf_revenues = producers_revenues - pcoef*np.sum(consumer_surplus_p) - opcoef*np.sum(consumer_surplus_op)
 
         price_vector = np.concatenate([self.Prp, self.Prop, self.fPrice[0], self.fPrice[1]])
 
@@ -609,8 +609,11 @@ class Simulation:
         baseline_gain = pcoef * np.sum(G0(peakPr)) + opcoef * np.sum(G0(offpeakPr))
         producers_revenues += baseline_gain
 
-        consumer_surplus_p = (peakPr)*(peak_offer+res_offer)
-        consumer_surplus_op = (offpeakPr)*(off_peak_offer+res_offer)
+        peak_offer += F0(peakPr)  # Ajout offre baseline
+        off_peak_offer += F0(offpeakPr)
+
+        consumer_surplus_p = peakPr*(peak_offer+res_offer)
+        consumer_surplus_op = offpeakPr*(off_peak_offer+res_offer)
 
         objective_planner = producers_revenues - pcoef*np.sum(consumer_surplus_p) - opcoef*np.sum(consumer_surplus_op)
 
@@ -638,10 +641,9 @@ class Simulation:
         initial_objective = objective(initial_prices)
         print("Initial function value: {:.0f}".format(initial_objective))
 
-        # result = minimize(objective, initial_prices, method='SLSQP', constraints=price_cap_constraint, callback=callback)
-        # optimized_prices = result.x
-        result = objective(initial_prices)
-        optimized_prices = initial_prices
+        result = minimize(objective, initial_prices, method='SLSQP', callback=callback, constraints=price_cap_constraint)
+
+        optimized_prices = result.x
 
         optimized_peakPr = optimized_prices[:self.Nt]
         optimized_offpeakPr = optimized_prices[self.Nt:2 * self.Nt]
