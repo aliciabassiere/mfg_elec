@@ -1,7 +1,7 @@
 {
     "initial capacity" : 55, # GW
     "potential capacity" : 100., # GW
-    "NX" : 11, # space grid size
+    "NX" : 21, # space grid size
     "Xmin" : 0.1, # minimum capacity factor value
     "Xmax" : 0.7, # maximum capacity factor value
     "discount rate" : 0.08,

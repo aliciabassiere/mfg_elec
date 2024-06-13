@@ -30,7 +30,7 @@ def G0(X):
     return 17.5*X*X/300.
 
 # price cap
-Pmax = 200
+Pmax = 500
 
 
 class Agent: # Base class for any producer
@@ -292,7 +292,7 @@ class Agent: # Base class for any producer
         curval = 0
 
         for t in range(self.Nt-1):
-            H = self.dX*self.dt*np.exp(-self.rho*(self.T[t+1]))*(pcoef*self.gain(peakPr[t+1],cPrice[t+1],fPrice[:,t+1],subsidy)+opcoef*self.gain(offpeakPr[t+1],cPrice[t+1], fPrice[:,t+1],subsidy))
+            H = self.dX*self.dt*np.exp(-self.rho*(self.T[t+1]))*(pcoef*self.gain(peakPr[t+1],cPrice[t+1],fPrice[:,t+1],subsidy[t+1])+opcoef*self.gain(offpeakPr[t+1],cPrice[t+1], fPrice[:,t+1],subsidy[t+1]))
             runGain.addTerms(H,self.m[t])
             curval = curval + np.sum(H*self.m_[t+1,:])
             H = -self.fCost*self.dX*self.dt*np.exp(-(self.rho+self.gamma)*(self.T[t+1]))*np.ones(self.NX)

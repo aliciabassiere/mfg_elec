@@ -1,9 +1,9 @@
 {
-    "initial capacity" : 5., # GW
+    "initial capacity" : 55., # GW
     "potential capacity" : 300., # GW
-    "NX" : 11, # space grid size
-    "Xmin" : 0.1, # minimum capacity factor value
-    "Xmax" : 0.7, # maximum capacity factor value
+    "NX" : 21, # space grid size
+    "Xmin" : 0, # minimum capacity factor value
+    "Xmax" : 0.5, # maximum capacity factor value
     "discount rate" : 0.08,
     "depreciation rate" : 0.03, # how fast the cost decreases
     "running cost" : 30, # per kW per year
