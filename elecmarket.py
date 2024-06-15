@@ -2,12 +2,12 @@ import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
 import time
-from scipy.optimize import minimize, LinearConstraint, approx_fprime, BFGS
+from scipy.optimize import minimize, LinearConstraint, approx_fprime, BFGS, basinhopping, Bounds
 from scipy.stats import gamma, beta
 import pandas as pd
 from functools import reduce
 import logging
-from joblib import Parallel, delayed
+import nlopt
 from line_profiler import LineProfiler
 
 import gurobipy as gp
@@ -30,7 +30,7 @@ def G0(X):
     return 17.5*X*X/300.
 
 # price cap
-Pmax = 500
+Pmax = 200
 
 
 class Agent: # Base class for any producer
@@ -292,7 +292,7 @@ class Agent: # Base class for any producer
         curval = 0
 
         for t in range(self.Nt-1):
-            H = self.dX*self.dt*np.exp(-self.rho*(self.T[t+1]))*(pcoef*self.gain(peakPr[t+1],cPrice[t+1],fPrice[:,t+1],subsidy[t+1])+opcoef*self.gain(offpeakPr[t+1],cPrice[t+1], fPrice[:,t+1],subsidy[t+1]))
+            H = self.dX*self.dt*np.exp(-self.rho*(self.T[t+1]))*(pcoef*self.gain(peakPr[t+1],cPrice[t+1],fPrice[:,t+1],subsidy)+opcoef*self.gain(offpeakPr[t+1],cPrice[t+1], fPrice[:,t+1],subsidy))
             runGain.addTerms(H,self.m[t])
             curval = curval + np.sum(H*self.m_[t+1,:])
             H = -self.fCost*self.dX*self.dt*np.exp(-(self.rho+self.gamma)*(self.T[t+1]))*np.ones(self.NX)
@@ -442,6 +442,7 @@ class Simulation:
         self.acoef = np.array(cp['Fsupply'][0])
         self.bcoef = np.array(cp['Fsupply'][1])
         self.fPrice = np.zeros((self.Nfuels,self.Nt))
+        self.rho = cp['discount rate']
         with gp.Env(empty=True) as env:
             env.setParam('OutputFlag', 0)  # Minimum value
             env.start()
@@ -513,31 +514,38 @@ class Simulation:
         peak_offer = 0  # Offre d'électricité conventionnelle peak
         off_peak_offer = 0  # Offre d'électricité conventionnelle off peak
         res_offer = 0 # Offre de renouvelable
+        fuel_revenues = 0
+        other_gains = 0
+        default = 0
 
         # fuel_revenues : revenus pour l'offre de combustible
 
         for agent in self.cagents:
             producers_revenues += self.compute_agent(agent, self.Prp, self.Prop, self.fPrice)
-            peak_offer += agent.full_offer(self.Prp, self.carbonTax, self.fPrice)
-            off_peak_offer += agent.full_offer(self.Prop, self.carbonTax, self.fPrice)
-            fuel_revenues = (pcoef * np.sum(peak_offer) + opcoef * np.sum(off_peak_offer)) * agent.cFuel * self.fPrice[agent.fuel]  # revenus du vendeur de combustible ajoutés
-            producers_revenues += np.sum(fuel_revenues)
+            agent_offer_peak = agent.full_offer(self.Prp, self.carbonTax, self.fPrice)
+            agent_offer_off_peak = agent.full_offer(self.Prop, self.carbonTax, self.fPrice)
+            peak_offer += agent_offer_peak
+            off_peak_offer += agent_offer_off_peak
+
+            for t in range(self.Nt - 1):
+                fuel_revenues += np.exp(-self.rho*(self.T[t]))*((pcoef*agent_offer_peak[t] + opcoef*agent_offer_peak[t]) * self.fPrice[agent.fuel, t])  # revenus du vendeur de combustible ajoutés
+
 
         for agent in self.ragents:
             producers_revenues += self.compute_agent(agent, self.Prp, self.Prop, self.fPrice)
             res_offer += agent.full_offer()
 
-        baseline_gain = pcoef*np.sum(G0(self.Prp))+opcoef*np.sum(G0(self.Prop))
-        producers_revenues += baseline_gain # Ajout revenus de marché Baseline
-
         peak_offer += F0(self.Prp) # Ajout offre baseline
         off_peak_offer += F0(self.Prop)
 
-        consumer_surplus_p = self.Prp*(peak_offer+res_offer)    # Surplus du consommateur : différence entre le price cap et le prix effectivement payé                                                                                # * quantité d'électricité totale
-        consumer_surplus_op = self.Prop*(off_peak_offer+res_offer)
+        # Consumer and baseline gains
+        for t in range(self.Nt - 1):
+            #other_gains += np.exp(-self.rho*(self.T[t]))*(pcoef*(G0(self.Prp[t])-self.Prp[t]*self.pdemand[t]) + opcoef*(G0(self.Prop[t])-self.Prop[t]*self.opdemand[t]))
+            other_gains += np.exp(-self.rho * (self.T[t])) * (pcoef * (G0(self.Prp[t])) + opcoef * (G0(self.Prop[t])))
 
-        mf_revenues = producers_revenues - pcoef*np.sum(consumer_surplus_p) - opcoef*np.sum(consumer_surplus_op)
+            default += np.exp(-self.rho * (self.T[t])) * Pmax * (self.pdemand[t] - peak_offer[t]) + (self.opdemand[t] - off_peak_offer[t])
 
+        mf_revenues = producers_revenues + np.sum(other_gains) + np.sum(fuel_revenues) + np.sum(default)
         price_vector = np.concatenate([self.Prp, self.Prop, self.fPrice[0], self.fPrice[1]])
 
         return conv, end-start, Niter, price_vector, mf_revenues
@@ -568,23 +576,23 @@ class Simulation:
         return output
 
     def compute_agent(self, agent, peakPr, offpeakPr, fPrice):
-
         objective = 0
+
         agent.preCalc(agent.indens, agent.indenshat, agent.V, agent.V1, agent.V2)
 
         ob, val, m, mhat, mu, muhat = agent.bestResponse(peakPr, offpeakPr, self.carbonTax, fPrice, self.subsidy)
         agent.update(1, m, mhat, mu, muhat)
 
-        for t in range(len(peakPr) - 1):
-            run_gain = agent.dX * agent.dt * np.exp(-agent.rho * agent.T[t + 1]) * (pcoef * agent.gain(peakPr[t + 1], self.carbonTax[t + 1], fPrice[:, t + 1], self.subsidy[t + 1])
-                                                                              + opcoef * agent.gain(offpeakPr[t + 1], self.carbonTax[t + 1], fPrice[:, t + 1], self.subsidy[t + 1]))
+        for t in range(self.Nt-1):
+            run_gain = agent.dX * agent.dt * np.exp(-agent.rho * agent.T[t]) * (pcoef * agent.gain(peakPr[t], self.carbonTax[t], fPrice[:, t], self.subsidy[t])
+                                                                              + opcoef * agent.gain(offpeakPr[t], self.carbonTax[t], fPrice[:, t], self.subsidy[t]))
 
-            entry_cost = -agent.fCost * agent.dX * agent.dt * np.ones(agent.NX) * np.exp(-(agent.rho + agent.gamma) * agent.T[t + 1])
+            entry_cost = -agent.fCost * agent.dX * agent.dt * np.ones(agent.NX) * np.exp(-(agent.rho + agent.gamma) * agent.T[t])
 
-            exit_gain = agent.sCost * agent.dX * agent.dt * np.ones(agent.NX) * np.exp(-(agent.rho + agent.gamma) * agent.T[t + 1])
+            exit_gain = agent.sCost * agent.dX * agent.dt * np.ones(agent.NX) * np.exp(-(agent.rho + agent.gamma) * agent.T[t])
 
-            objective += np.sum(run_gain * agent.m_[t + 1, :]) + np.sum(entry_cost * agent.muhat_[t + 1, :]) \
-                         + np.sum(exit_gain * agent.mu_[t + 1, :])
+            objective += np.sum(run_gain * agent.m_[t, :]) + np.sum(entry_cost * agent.muhat_[t, :]) \
+                         + np.sum(exit_gain * agent.mu_[t, :])
 
         return objective
 
@@ -594,68 +602,157 @@ class Simulation:
         peak_offer = 0
         off_peak_offer = 0
         res_offer = 0
+        fuel_revenues = 0
+        other_gains = 0
+        default = 0
 
         for agent in self.cagents:
             producers_revenues += self.compute_agent(agent, peakPr, offpeakPr, fPrice)
-            peak_offer += agent.full_offer(peakPr, self.carbonTax, fPrice)
-            off_peak_offer += agent.full_offer(offpeakPr, self.carbonTax, fPrice)
-            fuel_revenues = (pcoef*np.sum(peak_offer) + opcoef*np.sum(off_peak_offer)) * agent.cFuel * fPrice[agent.fuel]  # revenus du vendeur de combustible ajoutés
-            producers_revenues += np.sum(fuel_revenues)
+            agent_offer_peak = agent.full_offer(peakPr, self.carbonTax, fPrice)
+            agent_offer_off_peak = agent.full_offer(offpeakPr, self.carbonTax, fPrice)
+            peak_offer += agent_offer_peak
+            off_peak_offer += agent_offer_off_peak
+
+            for t in range(self.Nt - 1):
+                fuel_revenues += np.exp(-self.rho*(self.T[t]))*((pcoef*agent_offer_peak[t] + opcoef*agent_offer_peak[t]) * fPrice[agent.fuel, t])  # revenus du vendeur de combustible ajoutés
 
         for agent in self.ragents:
             producers_revenues += self.compute_agent(agent, peakPr, offpeakPr, fPrice)
             res_offer += agent.full_offer()
 
-        baseline_gain = pcoef * np.sum(G0(peakPr)) + opcoef * np.sum(G0(offpeakPr))
-        producers_revenues += baseline_gain
-
         peak_offer += F0(peakPr)  # Ajout offre baseline
         off_peak_offer += F0(offpeakPr)
 
-        consumer_surplus_p = peakPr*(peak_offer+res_offer)
-        consumer_surplus_op = offpeakPr*(off_peak_offer+res_offer)
+        for t in range(self.Nt - 1):
+            #other_gains += np.exp(-self.rho*(self.T[t]))*(pcoef*(G0(peakPr[t])-peakPr[t]*self.pdemand[t]) + opcoef*(G0(offpeakPr[t])-offpeakPr[t]*self.opdemand[t]))
+            other_gains += np.exp(-self.rho * (self.T[t])) * (pcoef * (G0(peakPr[t])) + opcoef * (
+                            G0(offpeakPr[t])))
+            default += np.exp(-self.rho*(self.T[t]))*Pmax*(self.pdemand[t] - peak_offer[t]) + (self.opdemand[t] - off_peak_offer[t])
 
-        objective_planner = producers_revenues - pcoef*np.sum(consumer_surplus_p) - opcoef*np.sum(consumer_surplus_op)
-
-        ### Pour paralléliser
-
-        # objectives = Parallel(n_jobs=-2, prefer="threads")(delayed(self.compute_agent)(agent, peakPr, offpeakPr, fPrice) for agent in self.ragents + self.cagents)
-        # objective_planner = sum(objectives)
+        objective_planner = producers_revenues + np.sum(other_gains) + np.sum(fuel_revenues) + np.sum(default)
 
         return objective_planner
 
     def optimizePrices(self, initial_prices):
 
-        iteration_count = [0]
-        def callback(x):
-            iteration_count[0] += 1
-            print("Iteration {}: Current function value: {:.6f}".format(iteration_count[0], objective(x)))
-
-        def objective(prices):
+        def objective(prices, grad):
+            if grad.size > 0:
+                grad[:] = approx_jacobian(prices, objective_without_grad)
             peakPr, offpeakPr = prices[:self.Nt], prices[self.Nt:2 * self.Nt]
             fPrice = np.reshape(prices[2 * self.Nt:], (self.Nfuels, self.Nt))
             return self.plannerProblem(peakPr, offpeakPr, fPrice)
 
-        price_cap_constraint = LinearConstraint(np.eye(len(initial_prices)), lb=0, ub=Pmax)
+        def objective_without_grad(prices):
+            peakPr, offpeakPr = prices[:self.Nt], prices[self.Nt:2 * self.Nt]
+            fPrice = np.reshape(prices[2 * self.Nt:], (self.Nfuels, self.Nt))
+            return self.plannerProblem(peakPr, offpeakPr, fPrice)
 
-        initial_objective = objective(initial_prices)
-        print("Initial function value: {:.0f}".format(initial_objective))
+        def approx_jacobian(x, func, epsilon=1e-8):
+            n = x.size
+            jacobian = np.zeros(n)
+            fx = func(x)
+            for i in range(n):
+                x_eps = x.copy()
+                x_eps[i] += epsilon
+                jacobian[i] = (func(x_eps) - fx) / epsilon
+            return jacobian
 
-        result = minimize(objective, initial_prices, method='SLSQP', callback=callback, constraints=price_cap_constraint)
+        opt = nlopt.opt(nlopt.LD_MMA, len(initial_prices))  # Use the Method of Moving Asymptotes
+        opt.set_min_objective(objective)
+        opt.set_lower_bounds(np.zeros(len(initial_prices)))
+        opt.set_upper_bounds(np.full(len(initial_prices), Pmax))
+        opt.set_xtol_rel(1e-6)
+        opt.set_maxeval(1000)
+        opt.set_ftol_rel(1e-9)
+        opt.set_vector_storage(100)
 
-        optimized_prices = result.x
+        initial_objective = objective_without_grad(initial_prices)
+        print(f"Initial function value: {initial_objective:.6f}")
 
-        optimized_peakPr = optimized_prices[:self.Nt]
-        optimized_offpeakPr = optimized_prices[self.Nt:2 * self.Nt]
-        optimized_fPrice_flat = optimized_prices[2 * self.Nt:]
-        optimized_fPrice = np.reshape(optimized_fPrice_flat, (self.Nfuels, self.Nt))
+        try:
+            optimized_prices = opt.optimize(initial_prices)
+            final_objective = opt.last_optimum_value()
+            result_code = opt.last_optimize_result()
 
-        for agent in self.ragents + self.cagents:
-            agent.preCalc(agent.indens, agent.indenshat, agent.V, agent.V1, agent.V2)
-            ob, val, m, mhat, mu, muhat = agent.bestResponse(optimized_peakPr, optimized_offpeakPr, self.carbonTax, optimized_fPrice, self.subsidy)
-            agent.update(1, m, mhat, mu, muhat)
+            print(f"Optimization result code: {result_code}")
+            print(f"Optimized function value: {final_objective:.6f}")
 
-        return result, optimized_peakPr, optimized_offpeakPr, optimized_fPrice
+            optimized_peakPr = optimized_prices[:self.Nt]
+            optimized_offpeakPr = optimized_prices[self.Nt:2 * self.Nt]
+            optimized_fPrice_flat = optimized_prices[2 * self.Nt:]
+            optimized_fPrice = np.reshape(optimized_fPrice_flat, (self.Nfuels, self.Nt))
+
+            for agent in self.ragents + self.cagents:
+                agent.preCalc(agent.indens, agent.indenshat, agent.V, agent.V1, agent.V2)
+                ob, val, m, mhat, mu, muhat = agent.bestResponse(optimized_peakPr, optimized_offpeakPr, self.carbonTax,
+                                                                 optimized_fPrice, self.subsidy)
+                agent.update(1, m, mhat, mu, muhat)
+
+            return optimized_prices, optimized_peakPr, optimized_offpeakPr, optimized_fPrice
+        except Exception as e:
+            print(f"Optimization failed: {str(e)}")
+            return None, None, None, None
+
+    # def optimizePrices(self, initial_prices):
+    #
+    #     iteration_count = [0]
+    #     # def callback(x):
+    #     #     iteration_count[0] += 1
+    #     #     print("Iteration {}: Current function value: {:.6f}".format(iteration_count[0], objective(x)))
+    #
+    #     def callback(xk):
+    #         iteration_count[0] += 1
+    #         f_val = objective(xk)
+    #         grad = approx_jacobian(xk, objective)
+    #         print("Iteration {}: Current function value: {:.6f}".format(iteration_count[0], f_val))
+    #         print("Gradient: {}".format(grad))
+    #
+    #     def approx_jacobian(x, func, epsilon=1e-8):
+    #         n = x.size
+    #         jacobian = np.zeros(n)
+    #         fx = func(x)
+    #         for i in range(n):
+    #             x_eps = x.copy()
+    #             x_eps[i] += epsilon
+    #             jacobian[i] = (func(x_eps) - fx) / epsilon
+    #         return jacobian
+    #
+    #     def objective(prices):
+    #         peakPr, offpeakPr = prices[:self.Nt], prices[self.Nt:2 * self.Nt]
+    #         fPrice = np.reshape(prices[2 * self.Nt:], (self.Nfuels, self.Nt))
+    #         return self.plannerProblem(peakPr, offpeakPr, fPrice)
+    #
+    #     price_cap_constraint = LinearConstraint(np.eye(len(initial_prices)), lb=0, ub=Pmax)
+    #
+    #     initial_objective = objective(initial_prices)
+    #     print("Initial function value: {:.0f}".format(initial_objective))
+    #     initial_objective = objective(initial_prices)
+    #     initial_gradient = approx_jacobian(initial_prices, objective)
+    #     print("Initial function value: {:.6f}".format(initial_objective))
+    #     print("Initial gradient: {}".format(initial_gradient))
+    #
+    #     result = minimize(
+    #         objective,
+    #         initial_prices,
+    #         method='Nelder-Mead',
+    #         callback=callback,
+    #         constraints=price_cap_constraint,
+    #         options={'ftol': 1e-9}  # Increase iterations and adjust tolerance
+    #     )
+    #
+    #     optimized_prices = result.x
+    #
+    #     optimized_peakPr = optimized_prices[:self.Nt]
+    #     optimized_offpeakPr = optimized_prices[self.Nt:2 * self.Nt]
+    #     optimized_fPrice_flat = optimized_prices[2 * self.Nt:]
+    #     optimized_fPrice = np.reshape(optimized_fPrice_flat, (self.Nfuels, self.Nt))
+    #
+    #     for agent in self.ragents + self.cagents:
+    #         agent.preCalc(agent.indens, agent.indenshat, agent.V, agent.V1, agent.V2)
+    #         ob, val, m, mhat, mu, muhat = agent.bestResponse(optimized_peakPr, optimized_offpeakPr, self.carbonTax, optimized_fPrice, self.subsidy)
+    #         agent.update(1, m, mhat, mu, muhat)
+    #
+    #     return result, optimized_peakPr, optimized_offpeakPr, optimized_fPrice
 
 
 class PlannerProblem:
@@ -802,28 +899,88 @@ class PlannerProblem:
 
         x0 = initial_guess
 
-        def objective_wrapper(variables):
+        def objective_wrapper(variables, grad):
+            # Since gradients are not available, we just ignore `grad`
             return self.objective_function(variables)
 
-        bounds = [(0, None)] * total_variable_count
+        bounds_lower = [0] * total_variable_count
+        bounds_upper = [float('inf')] * total_variable_count
 
+        opt = nlopt.opt(nlopt.LN_COBYLA, total_variable_count)
+        opt.set_min_objective(objective_wrapper)
+        opt.set_lower_bounds(bounds_lower)
+        opt.set_upper_bounds(bounds_upper)
 
-        result = minimize(
-            objective_wrapper,
-            x0,
-            method='trust-constr',
-            constraints=constraints,
-            bounds=bounds,
-            callback=callback,
-            options={'disp': True, 'sparse_jacobian': True, 'verbose': 3, 'gtol': 1e-4, 'xtol': 1e-4, 'maxiter': 20000}
-        )
+        # Set constraints
+        for constraint in constraints:
+            def constraint_wrapper(variables, grad):
+                # Since gradients are not available, we just ignore `grad`
+                if grad.size > 0:
+                    raise RuntimeError("Constraint gradient information is not available.")
+                return constraint(variables)
 
-        if result.success:
+            opt.add_inequality_constraint(constraint_wrapper, 1e-8)
+
+        opt.set_xtol_rel(1e-4)
+        opt.set_maxeval(20000)
+
+        iteration_count = [0]
+
+        def callback(xk, f):
+            iteration_count[0] += 1
+            print("Iteration {}: Current function value: {:.6f}".format(iteration_count[0], f))
+            return False  # Return True to stop optimization early
+
+        opt.set_ftol_rel(1e-4)
+        opt.set_stopval(0.0)
+        opt.set_maxeval(20000)
+        opt.set_xtol_rel(1e-4)
+        opt.set_maxtime(600)  # Example: 10 minutes time limit
+
+        result = opt.optimize(x0)
+        minf = opt.last_optimum_value()
+
+        if opt.last_optimize_result() > 0:
             print("Optimization succeeded.")
         else:
-            print("Optimization failed:", result.message)
+            print("Optimization failed: result code =", opt.last_optimize_result())
 
         return result
+
+    # def run(self):
+    #     total_variable_count = sum(4 * (agent.Nt - 1) * agent.NX for agent in self.agents)
+    #     initial_guess = np.zeros(total_variable_count)
+    #
+    #     constraints = self.populate_constraints()
+    #
+    #     x0 = initial_guess
+    #
+    #     def objective_wrapper(variables):
+    #         return self.objective_function(variables)
+    #
+    #     bounds = [(0, None)] * total_variable_count
+    #
+    #     def callback(x):
+    #         iteration_count[0] += 1
+    #         print("Iteration {}: Current function value: {:.6f}".format(iteration_count[0], objective(x)))
+    #
+    #
+    #     result = minimize(
+    #         objective_wrapper,
+    #         x0,
+    #         method='trust-constr',
+    #         constraints=constraints,
+    #         bounds=bounds,
+    #         callback=callback,
+    #         options={'disp': True, 'sparse_jacobian': True, 'verbose': 3, 'gtol': 1e-4, 'xtol': 1e-4, 'maxiter': 20000}
+    #     )
+    #
+    #     if result.success:
+    #         print("Optimization succeeded.")
+    #     else:
+    #         print("Optimization failed:", result.message)
+    #
+    #     return result
 
 
 #### Optimization tools
