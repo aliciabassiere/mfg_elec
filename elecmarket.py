@@ -22,6 +22,7 @@ pcoef = 65./168
 opcoef = 103./168
 # conversion of hourly revenue per MW into annual revenue per kW
 convcoef = 24.*365.25/1000.
+
 # baseline supply
 def F0(X):
     return 17.5*X/150.
@@ -29,8 +30,7 @@ def F0(X):
 def G0(X):
     return 17.5*X*X/300.
 
-# price cap
-Pmax = 200
+Pmax = 1000
 
 
 class Agent: # Base class for any producer
@@ -276,7 +276,9 @@ class Simulation:
         self.Nt = cp['Nt']
         self.T = np.linspace(cp['tmin'],cp['tmax'],self.Nt)
         self.pdemand = np.array(cp["demand"][:self.Nt])*cp["demand ratio"]/(pcoef*cp["demand ratio"]+opcoef)
+        self.pdemand = self.pdemand/1000
         self.opdemand = np.array(cp["demand"][:self.Nt])/(pcoef*cp["demand ratio"]+opcoef)
+        self.opdemand = self.opdemand / 1000
         self.Prp = np.zeros(self.Nt)
         self.Prop = np.zeros(self.Nt)
         self.Nfuels = cp['Nfuels']

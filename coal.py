@@ -1,18 +1,20 @@
 {
     "initial capacity" : 35,  # GW
     "potential capacity" : 0, # GW
-    "NX" : 101, # space grid size
+    "NX" : 51, # space grid size
+    # "Xmin" : 0, # minimum value of cost process
+    # "Xmax" : 120, # maximum value of cost process
     "Xmin" : 0, # minimum value of cost process
     "Xmax" : 120, # maximum value of cost process
     "discount rate" : 0.08,
-    "depreciation rate" : 0.0, # Half-life 15y for gas, 20y for coal, 12.5y for renewable
+    "depreciation rate" : 0, # Half-life 15y for gas, 20y for coal, 12.5y for renewable
     "running cost" : 32.5, # per kW per year
     "fixed cost" : 0, # per kW of capacity
-    "scrap value" : 0,
+    "scrap value" : 0,#145000,
     "long term mean" : 22.5, # parameters of cost process
     "mean reversion" : 0.5, # parameters of cost process
     "standard deviation" : 10., # parameters of cost process
     "emissions" : 0.986, # kgCO2 per kWh
     "fuel" : 0, # coal
-    "cFuel" : 0.456 # quantity of fuel needed for 1MW
+    "cFuel" : 0.456, # quantity of fuel needed for 1MW
 }
