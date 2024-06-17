@@ -134,7 +134,7 @@ class Agent: # Base class for any producer
         curval = 0
 
         for t in range(self.Nt-1):
-            H = self.dX*self.dt*np.exp(-self.rho*(self.T[t+1]))*(pcoef*self.gain(peakPr[t+1],cPrice[t+1],fPrice[:,t+1],subsidy)+opcoef*self.gain(offpeakPr[t+1],cPrice[t+1], fPrice[:,t+1],subsidy))
+            H = self.dX*self.dt*np.exp(-self.rho*(self.T[t+1]))*(pcoef*self.gain(peakPr[t+1],cPrice[t+1],fPrice[:,t+1],subsidy[t+1])+opcoef*self.gain(offpeakPr[t+1],cPrice[t+1], fPrice[:,t+1],subsidy[t+1]))
             runGain.addTerms(H,self.m[t])
             curval = curval + np.sum(H*self.m_[t+1,:])
             H = -self.fCost*self.dX*self.dt*np.exp(-(self.rho+self.gamma)*(self.T[t+1]))*np.ones(self.NX)
@@ -381,10 +381,9 @@ class Simulation:
 
         # Consumer and baseline gains
         for t in range(self.Nt - 1):
-            #other_gains += np.exp(-self.rho*(self.T[t]))*(pcoef*(G0(self.Prp[t])-self.Prp[t]*self.pdemand[t]) + opcoef*(G0(self.Prop[t])-self.Prop[t]*self.opdemand[t]))
-            other_gains += np.exp(-self.rho * (self.T[t])) * (pcoef * (G0(self.Prp[t])) + opcoef * (G0(self.Prop[t])))
+            other_gains += np.exp(-self.rho*(self.T[t]))*(pcoef*(G0(self.Prp[t])-self.Prp[t]*self.pdemand[t]) + opcoef*(G0(self.Prop[t])-self.Prop[t]*self.opdemand[t]))
+            default += np.exp(-self.rho * (self.T[t])) * (pcoef * Pmax*(max(0, self.pdemand[t] - peak_offer[t])) + opcoef * Pmax*(max(0, self.opdemand[t] - off_peak_offer[t])))
 
-            default += np.exp(-self.rho * (self.T[t])) * Pmax * (self.pdemand[t] - peak_offer[t]) + (self.opdemand[t] - off_peak_offer[t])
 
         mf_revenues = producers_revenues + np.sum(other_gains) + np.sum(fuel_revenues) + np.sum(default)
         price_vector = np.concatenate([self.Prp, self.Prop, self.fPrice[0], self.fPrice[1]])
@@ -465,9 +464,8 @@ class Simulation:
         off_peak_offer += F0(offpeakPr)
 
         for t in range(self.Nt - 1):
-            #other_gains += np.exp(-self.rho*(self.T[t]))*(pcoef*(G0(peakPr[t])-peakPr[t]*self.pdemand[t]) + opcoef*(G0(offpeakPr[t])-offpeakPr[t]*self.opdemand[t]))
-            other_gains += np.exp(-self.rho * (self.T[t])) * (pcoef * (G0(peakPr[t])) + opcoef * (G0(offpeakPr[t])))
-            default += np.exp(-self.rho*(self.T[t]))*Pmax*(self.pdemand[t] - peak_offer[t]) + (self.opdemand[t] - off_peak_offer[t])
+            other_gains += np.exp(-self.rho*(self.T[t]))*(pcoef*(G0(peakPr[t])-peakPr[t]*self.pdemand[t]) + opcoef*(G0(offpeakPr[t])-offpeakPr[t]*self.opdemand[t]))
+            default += np.exp(-self.rho*(self.T[t]))*(pcoef * Pmax*(max(0, self.pdemand[t] - peak_offer[t])) + opcoef*Pmax*(max(0, self.opdemand[t] - off_peak_offer[t])))
 
         objective_planner = producers_revenues + np.sum(other_gains) + np.sum(fuel_revenues) + np.sum(default)
 
