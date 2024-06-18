@@ -2,7 +2,6 @@ import numpy as np
 from scipy.stats import norm
 import matplotlib
 import matplotlib.pyplot as plt
-matplotlib.use('TkAgg')
 import time
 from scipy.optimize import root_scalar, minimize
 from scipy.stats import gamma
@@ -22,14 +21,17 @@ pcoef = 65./168
 opcoef = 103./168
 # conversion of hourly revenue per MW into annual revenue per kW
 convcoef = 24.*365.25/1000.
+# price cap
+Pmax = 1000
+
 # baseline supply
 def F0(X):
-    return 17.5*X/150.
+    #return 17.5*X/150.
+    return 14.8 * X / Pmax   # Nuke + Hydro
 # Integrated baseline supply function
 def G0(X):
-    return 17.5*X*X/300.
-# price cap
-Pmax = 200
+    #return 17.5*X*X/300.
+    return 14.8 * X * X / (Pmax*2)
 
 
 class Agent: # Base class for any producer
@@ -56,8 +58,6 @@ class Agent: # Base class for any producer
         self.mhat_ = np.zeros((self.Nt,self.NX))
         self.mu_ = np.zeros((self.Nt,self.NX))
         self.muhat_ = np.zeros((self.Nt,self.NX))
-
-
 
 
     def preCalc(self,indens,indenshat,V,V1,V2):
@@ -320,6 +320,9 @@ class Simulation:
             output[a.name+" offpeak supply"] = a.full_offer()
         for i in range(self.Nfuels):
             output["Fuel "+str(i)] = self.fPrice[i,:]
+
+        output["Baseload offpeak supply"] = F0(self.Prop)
+        output["Baseload peak supply"] = F0(self.Prp)
         df = pd.DataFrame.from_dict(output)
         df.to_csv(scenario_name+'.csv')
         return output

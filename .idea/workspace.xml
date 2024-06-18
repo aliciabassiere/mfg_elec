@@ -1,0 +1,275 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="d3ff0047-26fa-4577-ac1e-8caeb582e1f8" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/calibration_wind.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/calibration_wind.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/calibration_wind_2.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/calibration_wind_2.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/coal.py" beforeDir="false" afterPath="$PROJECT_DIR$/coal.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/common_params.py" beforeDir="false" afterPath="$PROJECT_DIR$/common_params.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/elecmarket.py" beforeDir="false" afterPath="$PROJECT_DIR$/elecmarket.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/gas.py" beforeDir="false" afterPath="$PROJECT_DIR$/gas.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/renewable.py" beforeDir="false" afterPath="$PROJECT_DIR$/renewable.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/simulation.py" beforeDir="false" afterPath="$PROJECT_DIR$/simulation.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test.csv" beforeDir="false" afterPath="$PROJECT_DIR$/test.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/coal.py" beforeDir="false" afterPath="$PROJECT_DIR$/test/coal.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/common_params.py" beforeDir="false" afterPath="$PROJECT_DIR$/test/common_params.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/demand_fuelprice.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/test/demand_fuelprice.pdf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/gas.py" beforeDir="false" afterPath="$PROJECT_DIR$/test/gas.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/price_capacity.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/test/price_capacity.pdf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/renewable.py" beforeDir="false" afterPath="$PROJECT_DIR$/test/renewable.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/supply.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/test/supply.pdf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/test.csv" beforeDir="false" afterPath="$PROJECT_DIR$/test/test.csv" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+        <option value="Jupyter Notebook" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 1
+}</component>
+  <component name="ProjectId" id="2V3huaq9XgvhKzaBHCUS62r9XJ8" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ASKED_ADD_EXTERNAL_FILES": "true",
+    "Python.planner.executor": "Run",
+    "Python.simulation (1).executor": "Run",
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "WebServerToolWindowFactoryState": "false",
+    "ignore.virus.scanning.warn.message": "true",
+    "last_opened_file_path": "C:/Users/Alicia BASSIERE/OneDrive - GENES/Documents/GitHub/DynamicInvestmentPrograming",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "com.jetbrains.python.black.configuration.BlackFormatterConfigurable",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\Alicia BASSIERE\OneDrive - GENES\Documents\GitHub\mfg_elec\calibration" />
+      <recent name="C:\Users\Alicia BASSIERE\OneDrive - GENES\Documents\GitHub\mfg_elec" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\Alicia BASSIERE\OneDrive - GENES\Documents\GitHub\mfg_elec\calibration" />
+      <recent name="C:\Users\Alicia BASSIERE\OneDrive - GENES\Documents\GitHub\mfg_elec\entry_exit" />
+    </key>
+  </component>
+  <component name="RunManager" selected="Python.simulation (1)">
+    <configuration name="planner" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="mfg_elec" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/planner.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="simulation (1)" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="mfg_elec" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/simulation.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="simulation" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="mfg_elec" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/elecmarket" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/elecmarket/simulation.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="test" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="mfg_elec" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/elecmarket" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/elecmarket/test.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Python.simulation (1)" />
+        <item itemvalue="Python.planner" />
+        <item itemvalue="Python.simulation" />
+        <item itemvalue="Python.test" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-js-predefined-1d06a55b98c1-91d5c284f522-JavaScript-PY-241.15989.155" />
+        <option value="bundled-python-sdk-babbdf50b680-7c6932dee5e4-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-241.15989.155" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="d3ff0047-26fa-4577-ac1e-8caeb582e1f8" name="Changes" comment="" />
+      <created>1694070894710</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1694070894710</updated>
+      <workItem from="1694070896083" duration="10824000" />
+      <workItem from="1695135995940" duration="3354000" />
+      <workItem from="1695285655329" duration="6840000" />
+      <workItem from="1695396770374" duration="14034000" />
+      <workItem from="1695455018744" duration="9695000" />
+      <workItem from="1695521387050" duration="19424000" />
+      <workItem from="1695987276202" duration="16767000" />
+      <workItem from="1696251242599" duration="177000" />
+      <workItem from="1696251482717" duration="382000" />
+      <workItem from="1696252475210" duration="41000" />
+      <workItem from="1706193958981" duration="4025000" />
+      <workItem from="1707820774386" duration="2594000" />
+      <workItem from="1708424441869" duration="38434000" />
+      <workItem from="1709218802318" duration="118000" />
+      <workItem from="1709632371250" duration="19596000" />
+      <workItem from="1710006674445" duration="520000" />
+      <workItem from="1710171351718" duration="20751000" />
+      <workItem from="1711373965003" duration="5198000" />
+      <workItem from="1711383632710" duration="819000" />
+      <workItem from="1712845873367" duration="31000" />
+      <workItem from="1712845933404" duration="4502000" />
+      <workItem from="1713258451255" duration="123000" />
+      <workItem from="1714471899151" duration="26205000" />
+      <workItem from="1714579792316" duration="9564000" />
+      <workItem from="1714637783039" duration="43711000" />
+      <workItem from="1715003961854" duration="59160000" />
+      <workItem from="1715346617323" duration="52000" />
+      <workItem from="1715608710818" duration="55964000" />
+      <workItem from="1715799340534" duration="18396000" />
+      <workItem from="1716277371445" duration="29000" />
+      <workItem from="1716397375318" duration="553000" />
+      <workItem from="1716397956493" duration="408000" />
+      <workItem from="1716398589691" duration="1513000" />
+      <workItem from="1718180451264" duration="26179000" />
+      <workItem from="1718269524468" duration="515000" />
+      <workItem from="1718382477282" duration="7058000" />
+      <workItem from="1718460286166" duration="25929000" />
+      <workItem from="1718550211445" duration="17360000" />
+      <workItem from="1718614167655" duration="27568000" />
+      <workItem from="1718655777653" duration="3511000" />
+      <workItem from="1718699044980" duration="15053000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
+  </component>
+  <component name="com.intellij.coverage.CoverageDataManagerImpl">
+    <SUITE FILE_PATH="coverage/mfg_elec$test.coverage" NAME="test Coverage Results" MODIFIED="1711374134487" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/elecmarket" />
+    <SUITE FILE_PATH="coverage/mfg_elec$simulation__1_.coverage" NAME="simulation (1) Coverage Results" MODIFIED="1718714119652" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/elecmarket_py$planner.coverage" NAME="planner Coverage Results" MODIFIED="1718199833270" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/mfg_elec$planner.coverage" NAME="planner Coverage Results" MODIFIED="1718699093434" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/elecmarket_py$test.coverage" NAME="test Coverage Results" MODIFIED="1712849048802" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/elecmarket" />
+    <SUITE FILE_PATH="coverage/mfg_elec$simulation.coverage" NAME="simulation Coverage Results" MODIFIED="1710258488356" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/elecmarket" />
+    <SUITE FILE_PATH="coverage/elecmarket_py$simulation__1_.coverage" NAME="simulation (1) Coverage Results" MODIFIED="1715687830712" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/planner_py$planner.coverage" NAME="planner Coverage Results" MODIFIED="1718655346850" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/elecmarket_py$simulation.coverage" NAME="simulation Coverage Results" MODIFIED="1715610468355" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/elecmarket" />
+  </component>
+</project>
