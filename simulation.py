@@ -86,7 +86,7 @@ plt.title('Conventional/ renewable peak supply, GW')
 plt.legend()
 
 plt.subplot(122)
-plt.bar(2018+out['time'],out['Baseload offpeak supply'],width=0.25,label='Baseload supply', color ='purple')
+plt.bar(2018+out['time'],out['Baseload offpeak supply'],width=0.25,label='Baseload supply', color ='blue')
 plt.bar(2018+out['time'],out['Coal offpeak supply'],width=0.25,
         bottom=out['Baseload offpeak supply'], label='Coal supply', color ='red')
 plt.bar(2018+out['time'],out['Gas offpeak supply'],width=0.25,

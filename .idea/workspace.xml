@@ -5,23 +5,13 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="d3ff0047-26fa-4577-ac1e-8caeb582e1f8" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/calibration_wind.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/calibration_wind.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/calibration_wind_2.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/calibration_wind_2.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/coal.py" beforeDir="false" afterPath="$PROJECT_DIR$/coal.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/common_params.py" beforeDir="false" afterPath="$PROJECT_DIR$/common_params.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/elecmarket.py" beforeDir="false" afterPath="$PROJECT_DIR$/elecmarket.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gas.py" beforeDir="false" afterPath="$PROJECT_DIR$/gas.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/renewable.py" beforeDir="false" afterPath="$PROJECT_DIR$/renewable.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/simulation.py" beforeDir="false" afterPath="$PROJECT_DIR$/simulation.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/test.csv" beforeDir="false" afterPath="$PROJECT_DIR$/test.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/coal.py" beforeDir="false" afterPath="$PROJECT_DIR$/test/coal.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/common_params.py" beforeDir="false" afterPath="$PROJECT_DIR$/test/common_params.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/test/demand_fuelprice.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/test/demand_fuelprice.pdf" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/gas.py" beforeDir="false" afterPath="$PROJECT_DIR$/test/gas.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/test/price_capacity.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/test/price_capacity.pdf" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/renewable.py" beforeDir="false" afterPath="$PROJECT_DIR$/test/renewable.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/test/supply.pdf" beforeDir="false" afterPath="$PROJECT_DIR$/test/supply.pdf" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/test.csv" beforeDir="false" afterPath="$PROJECT_DIR$/test/test.csv" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -240,7 +230,7 @@
       <workItem from="1718550211445" duration="17360000" />
       <workItem from="1718614167655" duration="27568000" />
       <workItem from="1718655777653" duration="3511000" />
-      <workItem from="1718699044980" duration="15053000" />
+      <workItem from="1718699044980" duration="16502000" />
     </task>
     <servers />
   </component>
@@ -263,7 +253,7 @@
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/mfg_elec$test.coverage" NAME="test Coverage Results" MODIFIED="1711374134487" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/elecmarket" />
-    <SUITE FILE_PATH="coverage/mfg_elec$simulation__1_.coverage" NAME="simulation (1) Coverage Results" MODIFIED="1718714119652" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/mfg_elec$simulation__1_.coverage" NAME="simulation (1) Coverage Results" MODIFIED="1718715252632" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/elecmarket_py$planner.coverage" NAME="planner Coverage Results" MODIFIED="1718199833270" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/mfg_elec$planner.coverage" NAME="planner Coverage Results" MODIFIED="1718699093434" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/elecmarket_py$test.coverage" NAME="test Coverage Results" MODIFIED="1712849048802" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/elecmarket" />
