@@ -6,7 +6,7 @@
 
 from elecmarket import *
 import os as os
-scenario_name = "test" # this will be the name of the output file & folder
+scenario_name = "no_policy" # this will be the name of the output file & folder
 
 cp = getpar("common_params.py")
 
@@ -28,6 +28,7 @@ try:
     os.mkdir(scenario_name)
 except FileExistsError:
     print('Directory already exists')
+
 os.system(f"copy common_params.py {scenario_name}\\common_params.py")
 
 # parameter files are copied to output directory; change this if you change agent types
