@@ -6,7 +6,7 @@
     "offset" : 5, # parameters of the weight function in fictitious play
     "iterations" : 350, # Number of iterations in fictitious play
     "tolerance" : 50, # The algorithm stops if objective improvement is less than tolerance or after the number of iterations is reached
-    "carbon tax" : ([0,10,20],[10,100,200]), # Carbon tax is computed by linear interpolation: the first list contains years and the second one values
+    "carbon tax" : ([0,12,20],[20,120,170]), # Carbon tax is computed by linear interpolation: the first list contains years and the second one values
     "demand ratio" : 1.0994063118847284, # Ratio peak to offpeak demand
     "Nfuels" : 2, # Number of different fuels
     "Fsupply" : ([-4.5, -5.5], [0.25, 0.25]), # Fuel supply functions; they are linear in this version of the model;
