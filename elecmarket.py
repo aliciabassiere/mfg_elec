@@ -246,6 +246,10 @@ class Simulation:
     def psibar(self,x):
         return np.sum(self.bcoef*(x-self.acoef)**2/2.)
 
+    # def psibar(self,x):
+    #     return x+10
+
+
     def calcPrice(self):
         # compute price for given demand profile
         def opfunc(x,t):

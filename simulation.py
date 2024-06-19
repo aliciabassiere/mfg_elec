@@ -20,6 +20,25 @@ ragents = [Renewable('Renewable', cp, getpar('renewable.py'))]
 Niter = cp['iterations']
 tol = cp['tolerance']
 sim = Simulation(cagents,ragents,cp)
+
+# Generate x values for plotting
+x_values = np.linspace(0, 30, 400)
+
+# Calculate y values using the psibar function for both functions
+y_values1 = np.array([sim.psibar(x) for x in x_values])
+y_values2 = np.array([sim.psibar(x) for x in x_values])
+
+# Plotting
+plt.figure(figsize=(8, 5))
+plt.plot(x_values, y_values1, label=f'psibar1(x) with a={cp["Fsupply"][0][0]}, b={cp["Fsupply"][1][0]}')
+plt.plot(x_values, y_values2, label=f'psibar2(x) with a={cp["Fsupply"][0][1]}, b={cp["Fsupply"][1][1]}', linestyle='--')
+plt.title('Plot of the functions psibar(x) for two sets of parameters')
+plt.xlabel('x')
+plt.ylabel('psibar(x)')
+plt.legend()
+plt.grid(True)
+plt.show()
+
 conv, elapsed, Nit = sim.run(Niter, tol, cp['power'], cp['offset'])
 print('Elapsed time: ', elapsed)
 out = sim.write(scenario_name)
@@ -109,17 +128,17 @@ plt.show()
 # Generate x values for plotting
 x_values = np.linspace(0, 30, 400)
 
-# Calculate y values using the psibar function
-y_values = np.array([sim.psibar(x) for x in x_values])
+# Calculate y values using the psibar function for both functions
+y_values1 = np.array([sim.psibar(x) for x in x_values])
+y_values2 = np.array([sim.psibar(x) for x in x_values])
 
 # Plotting
 plt.figure(figsize=(8, 5))
-plt.plot(x_values, y_values, label='psibar(x)')
-plt.title('Plot of the function psibar(x)')
+plt.plot(x_values, y_values1, label=f'psibar1(x) with a={cp["Fsupply"][0][0]}, b={cp["Fsupply"][1][0]}')
+plt.plot(x_values, y_values2, label=f'psibar2(x) with a={cp["Fsupply"][0][1]}, b={cp["Fsupply"][1][1]}', linestyle='--')
+plt.title('Plot of the functions psibar(x) for two sets of parameters')
 plt.xlabel('x')
 plt.ylabel('psibar(x)')
 plt.legend()
 plt.grid(True)
 plt.show()
-
-print('Elapsed time: ', elapsed)
