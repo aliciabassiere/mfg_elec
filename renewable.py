@@ -9,8 +9,8 @@
     "running cost" : 14,#30, # per kW per year
     "fixed cost" : 2000, # per kW of capacity
     "scrap value" : 0,
-    "long term mean" : 0.215, # Theta # parameters of capacity factor process
-    "mean reversion" : 0.185, #0.5, # # k # parameters of capacity factor process
-    "standard deviation" : 0.075, # parameters of capacity factor process
+    "long term mean" : 0.2, # Theta # parameters of capacity factor process
+    "mean reversion" : 0.2, #0.5, # # k # parameters of capacity factor process
+    "standard deviation" : 0.2,#0.075, # parameters of capacity factor process
     "emissions" : 0 # kgCO2 per kWh
 }
