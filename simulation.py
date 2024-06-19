@@ -6,7 +6,7 @@
 
 from elecmarket import *
 import os as os
-scenario_name = "no_policy_2" # this will be the name of the output file & folder
+scenario_name = "carbon_tax" # this will be the name of the output file & folder
 
 cp = getpar("common_params.py")
 
@@ -20,7 +20,7 @@ ragents = [Renewable('Renewable',cp,getpar('renewable.py'))]
 Niter = cp['iterations']
 tol = cp['tolerance']
 sim = Simulation(cagents,ragents,cp)
-conv, elapsed, Nit, price_vector, mf_revenues = sim.run(Niter, tol, cp['power'], cp['offset'])
+conv, elapsed, Nit, = sim.run(Niter, tol, cp['power'], cp['offset'])
 print('Elapsed time: ', elapsed/60, ' min')
 
 out = sim.write(scenario_name)

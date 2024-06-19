@@ -23,14 +23,14 @@ opcoef = 103./168
 # conversion of hourly revenue per MW into annual revenue per kW
 convcoef = 24.*365.25/1000.
 
+Pmax = 1000
+
 # baseline supply
 def F0(X):
     return 17.5*X/150.
 # Integrated baseline supply function
 def G0(X):
     return 17.5*X*X/300.
-
-Pmax = 1000
 
 
 class Agent: # Base class for any producer
@@ -169,6 +169,9 @@ class Agent: # Base class for any producer
 
     def capacity(self):
         return np.sum(self.m_,axis=1)*self.dX
+
+    def occupation_measure(self):
+        return self.dX*(self.m_.T)
     def pot_capacity(self):
         return np.sum(self.mhat_,axis=1)*self.dX
     def exit_measure(self):
@@ -353,42 +356,42 @@ class Simulation:
 
         #### Calculs revenus
 
-        producers_revenues = 0 # Revenus des producteurs renewable + gas + charbon + baseline
-        peak_offer = 0  # Offre d'électricité conventionnelle peak
-        off_peak_offer = 0  # Offre d'électricité conventionnelle off peak
-        res_offer = 0 # Offre de renouvelable
-        fuel_revenues = 0
-        other_gains = 0
-        default = 0
+        # producers_revenues = 0 # Revenus des producteurs renewable + gas + charbon + baseline
+        # peak_offer = 0  # Offre d'électricité conventionnelle peak
+        # off_peak_offer = 0  # Offre d'électricité conventionnelle off peak
+        # res_offer = 0 # Offre de renouvelable
+        # fuel_revenues = 0
+        # other_gains = 0
+        # default = 0
+        #
+        # for agent in self.cagents:
+        #     producers_revenues += self.compute_agent(agent, self.Prp, self.Prop, self.fPrice)
+        #     agent_offer_peak = agent.full_offer(self.Prp, self.carbonTax, self.fPrice)
+        #     agent_offer_off_peak = agent.full_offer(self.Prop, self.carbonTax, self.fPrice)
+        #     peak_offer += agent_offer_peak
+        #     off_peak_offer += agent_offer_off_peak
+        #
+        #     for t in range(self.Nt - 1):
+        #         fuel_revenues += np.exp(-self.rho*(self.T[t]))*((pcoef*agent_offer_peak[t] + opcoef*agent_offer_peak[t]) * self.fPrice[agent.fuel, t])  # revenus du vendeur de combustible ajoutés
+        #
+        #
+        # for agent in self.ragents:
+        #     producers_revenues += self.compute_agent(agent, self.Prp, self.Prop, self.fPrice)
+        #     res_offer += agent.full_offer()
+        #
+        # peak_offer += F0(self.Prp) # Ajout offre baseline
+        # off_peak_offer += F0(self.Prop)
+        #
+        # # Consumer and baseline gains
+        # for t in range(self.Nt - 1):
+        #     other_gains += np.exp(-self.rho*(self.T[t]))*(pcoef*(G0(self.Prp[t])-self.Prp[t]*self.pdemand[t]) + opcoef*(G0(self.Prop[t])-self.Prop[t]*self.opdemand[t]))
+        #     default += np.exp(-self.rho * (self.T[t])) * (pcoef * Pmax*(max(0, self.pdemand[t] - peak_offer[t])) + opcoef * Pmax*(max(0, self.opdemand[t] - off_peak_offer[t])))
 
-        for agent in self.cagents:
-            producers_revenues += self.compute_agent(agent, self.Prp, self.Prop, self.fPrice)
-            agent_offer_peak = agent.full_offer(self.Prp, self.carbonTax, self.fPrice)
-            agent_offer_off_peak = agent.full_offer(self.Prop, self.carbonTax, self.fPrice)
-            peak_offer += agent_offer_peak
-            off_peak_offer += agent_offer_off_peak
 
-            for t in range(self.Nt - 1):
-                fuel_revenues += np.exp(-self.rho*(self.T[t]))*((pcoef*agent_offer_peak[t] + opcoef*agent_offer_peak[t]) * self.fPrice[agent.fuel, t])  # revenus du vendeur de combustible ajoutés
+        # mf_revenues = producers_revenues + np.sum(other_gains) + np.sum(fuel_revenues) + np.sum(default)
+        # price_vector = np.concatenate([self.Prp, self.Prop, self.fPrice[0], self.fPrice[1]])
 
-
-        for agent in self.ragents:
-            producers_revenues += self.compute_agent(agent, self.Prp, self.Prop, self.fPrice)
-            res_offer += agent.full_offer()
-
-        peak_offer += F0(self.Prp) # Ajout offre baseline
-        off_peak_offer += F0(self.Prop)
-
-        # Consumer and baseline gains
-        for t in range(self.Nt - 1):
-            other_gains += np.exp(-self.rho*(self.T[t]))*(pcoef*(G0(self.Prp[t])-self.Prp[t]*self.pdemand[t]) + opcoef*(G0(self.Prop[t])-self.Prop[t]*self.opdemand[t]))
-            default += np.exp(-self.rho * (self.T[t])) * (pcoef * Pmax*(max(0, self.pdemand[t] - peak_offer[t])) + opcoef * Pmax*(max(0, self.opdemand[t] - off_peak_offer[t])))
-
-
-        mf_revenues = producers_revenues + np.sum(other_gains) + np.sum(fuel_revenues) + np.sum(default)
-        price_vector = np.concatenate([self.Prp, self.Prop, self.fPrice[0], self.fPrice[1]])
-
-        return conv, end-start, Niter, price_vector, mf_revenues
+        return conv, end-start, Niter #, price_vector, mf_revenues
 
     def write(self, scenario_name):
         # write simulation output into a file scenario_name
@@ -396,16 +399,45 @@ class Simulation:
                   "peak demand": self.pdemand, "offpeak demand": self.opdemand}
         total_sup_offpeak = 0
         total_sup_peak = 0
+        carbon_emissions_offpeak = 0
+        carbon_emissions_peak = 0
+
         for a in self.cagents:
+            pop = a.occupation_measure()
+            run_gain, entry_cost, exit_gain = self.compute_revenues(a, self.Prp, self.Prop, self.fPrice)
+            output[a.name + " Market gains (min)"] = run_gain.min(axis=0)
+            output[a.name + " Entry cost (min)"] = entry_cost.min(axis=0)
+            output[a.name + " Exit gain (min)"] = exit_gain.min(axis=0)
+            output[a.name + " Market gains (max)"] = run_gain.max(axis=0)
+            output[a.name + " Entry cost (max)"] = entry_cost.max(axis=0)
+            output[a.name + " Exit gain (max)"] = exit_gain.max(axis=0)
+            output[a.name + " Market gains (average)"] = run_gain.mean(axis=0)
+            output[a.name + " Entry cost (average)"] = entry_cost.mean(axis=0)
+            output[a.name + " Exit gain (average)"] = exit_gain.mean(axis=0)
             output[a.name+" capacity"] = a.capacity()
             output[a.name+" potential capacity"] = a.pot_capacity()
             output[a.name+" exit measure"] = a.exit_measure()
             output[a.name+" entry measure"] = a.entry_measure()
             output[a.name+" peak supply"] = a.full_offer(self.Prp, self.carbonTax, self.fPrice)
             output[a.name+" offpeak supply"] = a.full_offer(self.Prop, self.carbonTax, self.fPrice)
+            output[a.name + " Market revenues peak"] = a.full_offer(self.Prp, self.carbonTax, self.fPrice)*self.Prp
+            output[a.name + " Market revenues offpeak"] = a.full_offer(self.Prop, self.carbonTax, self.fPrice) * self.Prop
             total_sup_offpeak += output[a.name+" offpeak supply"]
             total_sup_peak += output[a.name + " peak supply"]
+            carbon_emissions_offpeak += output[a.name+ " offpeak supply"]*a.cTax
+            carbon_emissions_peak += output[a.name + " peak supply"] * a.cTax
+
         for a in self.ragents:
+            run_gain, entry_cost, exit_gain = self.compute_revenues(a, self.Prp, self.Prop, self.fPrice)
+            output[a.name + " Market gains (min)"] = run_gain.min(axis=0)
+            output[a.name + " Entry cost (min)"] = entry_cost.min(axis=0)
+            output[a.name + " Exit gain (min)"] = exit_gain.min(axis=0)
+            output[a.name + " Market gains (max)"] = run_gain.max(axis=0)
+            output[a.name + " Entry cost (max)"] = entry_cost.max(axis=0)
+            output[a.name + " Exit gain (max)"] = exit_gain.max(axis=0)
+            output[a.name + " Market gains (average)"] = run_gain.mean(axis=0)
+            output[a.name + " Entry cost (average)"] = entry_cost.mean(axis=0)
+            output[a.name + " Exit gain (average)"] = exit_gain.mean(axis=0)
             output[a.name+" capacity"] = a.capacity()
             output[a.name+" potential capacity"] = a.pot_capacity()
             output[a.name+" exit measure"] = a.exit_measure()
@@ -414,6 +446,9 @@ class Simulation:
             output[a.name+" offpeak supply"] = a.full_offer()
             total_sup_offpeak += output[a.name + " offpeak supply"]
             total_sup_peak += output[a.name + " peak supply"]
+            output[a.name + " Market revenues peak"] = output[a.name+" peak supply"] * self.Prp
+            output[a.name + " Market revenues offpeak"] = output[a.name+" offpeak supply"] * self.Prop
+
         for f in range(self.Nfuels):
             output["Fuel " + str(f)] = self.fPrice[f,:]
 
@@ -421,6 +456,9 @@ class Simulation:
         output["Baseload peak supply"] = F0(self.Prp)
         output["Default offpeak"] = output["offpeak demand"] - output["Baseload offpeak supply"] - total_sup_offpeak
         output["Default peak"] = output["peak demand"] - output["Baseload peak supply"] - total_sup_peak
+        output["Carbon offpeak"] = carbon_emissions_offpeak
+        output["Carbon peak"] = carbon_emissions_peak
+
         df = pd.DataFrame.from_dict(output)
         df.to_csv(scenario_name+'.csv')
         return output
@@ -436,7 +474,6 @@ class Simulation:
         for t in range(self.Nt-1):
             run_gain = agent.dX * agent.dt * np.exp(-agent.rho * agent.T[t]) * (pcoef * agent.gain(peakPr[t], self.carbonTax[t], fPrice[:, t], self.subsidy[t])
                                                                               + opcoef * agent.gain(offpeakPr[t], self.carbonTax[t], fPrice[:, t], self.subsidy[t]))
-
             entry_cost = -agent.fCost * agent.dX * agent.dt * np.ones(agent.NX) * np.exp(-(agent.rho + agent.gamma) * agent.T[t])
 
             exit_gain = agent.sCost * agent.dX * agent.dt * np.ones(agent.NX) * np.exp(-(agent.rho + agent.gamma) * agent.T[t])
@@ -445,6 +482,20 @@ class Simulation:
                          + np.sum(exit_gain * agent.mu_[t, :])
 
         return objective
+
+    def compute_revenues(self, agent, peakPr, offpeakPr, fPrice):
+        run_gain = np.zeros((agent.NX, self.Nt))
+        entry_cost = np.zeros((agent.NX, self.Nt))
+        exit_gain = np.zeros((agent.NX, self.Nt))
+
+        for t in range(self.Nt):
+            run_gain[:, t] = agent.dX * agent.dt * np.exp(-agent.rho * agent.T[t]) * (pcoef * agent.gain(peakPr[t], self.carbonTax[t], fPrice[:, t], self.subsidy[t])
+                                                                              + opcoef * agent.gain(offpeakPr[t], self.carbonTax[t], fPrice[:, t], self.subsidy[t]))
+            entry_cost[:, t] = -agent.fCost * agent.dX * agent.dt * np.ones(agent.NX) * np.exp(-(agent.rho + agent.gamma) * agent.T[t])
+
+            exit_gain[:, t] = agent.sCost * agent.dX * agent.dt * np.ones(agent.NX) * np.exp(-(agent.rho + agent.gamma) * agent.T[t])
+
+        return run_gain, entry_cost, exit_gain
 
     def plannerProblem(self, peakPr, offpeakPr, fPrice):
 

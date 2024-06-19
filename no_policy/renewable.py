@@ -1,6 +1,6 @@
 {
     "hours" : 12,
-    "tmin" : 0,to
+    "tmin" : 0,
     "tmax" : 25, # simulation length in years
     "Nt" : 300, # Time grid size
     "discount rate": 0.08,
@@ -9,10 +9,10 @@
     "iterations" : 350, # Number of iterations in fictitious play
     "tolerance" : 50, # The algorithm stops if objective improvement is less than tolerance or after the number of iterations is reached
     #"carbon tax" : ([0,12,25],[50, 130, 200]), # Carbon tax is computed by linear interpolation: the first list contains dates and the second one values
-    "carbon tax" : ([10,12,25],[0, 0, 0]),
-    "res subsidy" :([0,12,25],[0, 0, 0]),
-    #"res subsidy" : ([10,120,240], [0,0,0]),
-    "demand ratio" : 1.0994063118847284, #1.257580634655325, # Ratio peak to offpeak demand
+    "carbon tax" : ([0,12,25],[0, 0, 0]),
+    "res subsidy" :([0,5,25],[60, 73.40, 0]),
+    #"res subsidy" : ([0,12,25], [0,0,0]),
+    "demand ratio" : 1.11, #1.257580634655325, # Ratio peak to offpeak demand
     "Nfuels" : 2, # Number of different fuels
      "Fsupply" : ([-4.5, -5.5], [0.25, 0.25]), # Fuel supply functions; they are linear in this version of the model;
     # the first array contains the intercepts and the second one the coefficients

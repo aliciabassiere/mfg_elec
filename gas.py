@@ -8,7 +8,7 @@
     "depreciation rate" : 0.0, # Half-life 15y for gas, 20y for coal, 12.5y for renewable
     "running cost" : 20, #42., # per kW per year
     "fixed cost" : 550, # per kW of capacity
-    "scrap value" : -40,
+    "scrap value" : -55,
     "long term mean" : 37.94, # parameters of cost process
     "mean reversion" : 0.5, # parameters of cost process
     "standard deviation" : 12.53, # parameters of cost process
