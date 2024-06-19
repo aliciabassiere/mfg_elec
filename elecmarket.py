@@ -276,9 +276,7 @@ class Simulation:
         self.Nt = cp['Nt']
         self.T = np.linspace(cp['tmin'],cp['tmax'],self.Nt)
         self.pdemand = np.array(cp["demand"][:self.Nt])*cp["demand ratio"]/(pcoef*cp["demand ratio"]+opcoef)
-        self.pdemand = self.pdemand/1000
         self.opdemand = np.array(cp["demand"][:self.Nt])/(pcoef*cp["demand ratio"]+opcoef)
-        self.opdemand = self.opdemand / 1000
         self.Prp = np.zeros(self.Nt)
         self.Prop = np.zeros(self.Nt)
         self.Nfuels = cp['Nfuels']
@@ -396,6 +394,8 @@ class Simulation:
         # write simulation output into a file scenario_name
         output = {"time": self.cagents[0].T, "peak price": self.Prp, "offpeak price": self.Prop,
                   "peak demand": self.pdemand, "offpeak demand": self.opdemand}
+        total_sup_offpeak = 0
+        total_sup_peak = 0
         for a in self.cagents:
             output[a.name+" capacity"] = a.capacity()
             output[a.name+" potential capacity"] = a.pot_capacity()
@@ -403,6 +403,8 @@ class Simulation:
             output[a.name+" entry measure"] = a.entry_measure()
             output[a.name+" peak supply"] = a.full_offer(self.Prp, self.carbonTax, self.fPrice)
             output[a.name+" offpeak supply"] = a.full_offer(self.Prop, self.carbonTax, self.fPrice)
+            total_sup_offpeak += output[a.name+" offpeak supply"]
+            total_sup_peak += output[a.name + " peak supply"]
         for a in self.ragents:
             output[a.name+" capacity"] = a.capacity()
             output[a.name+" potential capacity"] = a.pot_capacity()
@@ -410,9 +412,15 @@ class Simulation:
             output[a.name+" entry measure"] = a.entry_measure()
             output[a.name+" peak supply"] = a.full_offer()
             output[a.name+" offpeak supply"] = a.full_offer()
+            total_sup_offpeak += output[a.name + " offpeak supply"]
+            total_sup_peak += output[a.name + " peak supply"]
         for f in range(self.Nfuels):
             output["Fuel " + str(f)] = self.fPrice[f,:]
 
+        output["Baseload offpeak supply"] = F0(self.Prop)
+        output["Baseload peak supply"] = F0(self.Prp)
+        output["Default offpeak"] = output["offpeak demand"] - output["Baseload offpeak supply"] - total_sup_offpeak
+        output["Default peak"] = output["peak demand"] - output["Baseload peak supply"] - total_sup_peak
         df = pd.DataFrame.from_dict(output)
         df.to_csv(scenario_name+'.csv')
         return output
