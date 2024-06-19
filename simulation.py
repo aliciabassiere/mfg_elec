@@ -6,7 +6,7 @@
 
 from elecmarket import *
 import os as os
-scenario_name = "no_policy" # this will be the name of the output file & folder
+scenario_name = "no_policy_2" # this will be the name of the output file & folder
 
 cp = getpar("common_params.py")
 
