@@ -17,9 +17,12 @@ logging.basicConfig(filename='optimization.log', level=logging.INFO, format='%(a
 
 # Constants
 # peak hours
-pcoef = 65./168
+#pcoef = 65./168
+pcoef = 7/24
+
 # off-peak hours
-opcoef = 103./168
+#opcoef = 103./168
+opcoef = 17/24
 # conversion of hourly revenue per MW into annual revenue per kW
 convcoef = 24.*365.25/1000.
 
@@ -27,11 +30,12 @@ Pmax = 1000
 
 # baseline supply
 def F0(X):
-    return 17.5*X/150.
+    #return 17.5*X/100.
+    return 14.8 * X / 100.
 # Integrated baseline supply function
 def G0(X):
-    return 17.5*X*X/300.
-
+    #return 17.5*X*X/200.
+    return 14.8*X*X/200.
 
 class Agent: # Base class for any producer
 
