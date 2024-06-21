@@ -8,8 +8,8 @@
     "offset" : 5, # parameters of the weight function in fictitious play
     "iterations" : 350, # Number of iterations in fictitious play
     "tolerance" : 50, # The algorithm stops if objective improvement is less than tolerance or after the number of iterations is reached
-    "carbon tax" : ([0,12,25],[50, 130, 200]), # Carbon tax is computed by linear interpolation: the first list contains dates and the second one values
-    #"carbon tax" : ([0,12,25],[0, 0, 0]),
+    "carbon tax" : ([0,12,25],[20, 130, 200]), # Carbon tax is computed by linear interpolation: the first list contains dates and the second one values
+    #"carbon tax" : ([0,12,25],[0,0,0]),
     "res subsidy" :([0,5,25],[60, 73.40, 0]),
     #"res subsidy" : ([0,12,25], [0,0,0]),
     "demand ratio" : 1.134, #1.257580634655325, # Ratio peak to offpeak demand

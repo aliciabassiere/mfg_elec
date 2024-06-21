@@ -6,7 +6,7 @@
 
 from elecmarket import *
 import os as os
-scenario_name = "carbon_tax" # this will be the name of the output file & folder
+scenario_name = "policy_mix" # this will be the name of the output file & folder
 
 cp = getpar("common_params.py")
 

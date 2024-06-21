@@ -14,5 +14,5 @@
     "standard deviation" : 10., # parameters of cost process
     "emissions" : 0.986, # kgCO2 per kWh
     "fuel" : 0, # coal
-    "cFuel" : 0.456 # quantity of fuel needed for 1MW
+    "cFuel" : 1.043 #0.456 # quantity of fuel needed for 1MW
 }

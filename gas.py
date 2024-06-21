@@ -14,6 +14,6 @@
     "standard deviation" : 12.53, # parameters of cost process
     "emissions" : 0.429, # kgCO2 per kWh
     "fuel" : 1, # gas
-    "cFuel" : 0.33 # quantity of fuel needed for 1MW
+    "cFuel" : 0.44#0.33 # quantity of fuel needed for 1MW
 
 }

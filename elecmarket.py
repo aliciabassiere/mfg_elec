@@ -288,7 +288,9 @@ class Simulation:
         self.Prop = np.zeros(self.Nt)
         self.Nfuels = cp['Nfuels']
         self.carbonTax = np.interp(self.T,cp['carbon tax'][0],cp['carbon tax'][1])
+        print("Carbon Tax: ", self.carbonTax[12*11])
         self.subsidy = np.interp(self.T,cp['res subsidy'][0],cp['res subsidy'][1])
+        print("Subsidy: ", self.subsidy[12*11])
         self.acoef = np.array(cp['Fsupply'][0])
         self.bcoef = np.array(cp['Fsupply'][1])
         self.fPrice = np.zeros((self.Nfuels,self.Nt))
